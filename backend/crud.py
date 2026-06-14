@@ -1,0 +1,99 @@
+from database import get_connection
+from schemas import TaskCreate, TaskUpdate
+
+
+def row_to_dict(row):
+    return dict(row) if row else None
+
+
+def get_tasks():
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM tasks ORDER BY id DESC")
+    tasks = [row_to_dict(row) for row in cursor.fetchall()]
+    connection.close()
+    return tasks
+
+
+def get_task(task_id: int):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+    task = row_to_dict(cursor.fetchone())
+    connection.close()
+    return task
+
+
+def create_task(task: TaskCreate):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        INSERT INTO tasks (title, description, assignee, deadline, status, priority)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            task.title,
+            task.description,
+            task.assignee,
+            task.deadline,
+            task.status,
+            task.priority,
+        ),
+    )
+    connection.commit()
+    task_id = cursor.lastrowid
+    connection.close()
+    return get_task(task_id)
+
+
+def update_task(task_id: int, task: TaskUpdate):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        UPDATE tasks
+        SET title = ?, description = ?, assignee = ?, deadline = ?, status = ?, priority = ?
+        WHERE id = ?
+        """,
+        (
+            task.title,
+            task.description,
+            task.assignee,
+            task.deadline,
+            task.status,
+            task.priority,
+            task_id,
+        ),
+    )
+    connection.commit()
+    connection.close()
+    return get_task(task_id)
+
+
+def update_task_status(task_id: int, status: str):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("UPDATE tasks SET status = ? WHERE id = ?", (status, task_id))
+    connection.commit()
+    connection.close()
+    return get_task(task_id)
+
+
+def delete_task(task_id: int):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+    connection.commit()
+    deleted_count = cursor.rowcount
+    connection.close()
+    return deleted_count > 0
+
+
+def get_members():
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM members ORDER BY id")
+    members = [row_to_dict(row) for row in cursor.fetchall()]
+    connection.close()
+    return members
