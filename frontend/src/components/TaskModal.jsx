@@ -82,6 +82,7 @@ function TaskModal({ task, members, onClose, onSave }) {
                 <option value="backlog">Бэклог</option>
                 <option value="todo">Нужно сделать</option>
                 <option value="in_progress">В процессе</option>
+                <option value="review">На проверке</option>
                 <option value="done">Выполнено</option>
               </select>
             </label>

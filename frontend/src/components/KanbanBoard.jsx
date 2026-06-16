@@ -4,10 +4,20 @@ const COLUMNS = [
   { key: 'backlog', title: 'Бэклог' },
   { key: 'todo', title: 'Нужно сделать' },
   { key: 'in_progress', title: 'В процессе' },
+  { key: 'review', title: 'На проверке' },
   { key: 'done', title: 'Выполнено' },
 ];
 
-function KanbanBoard({ tasks, isMentor, onDropTask, onOpenTask, onEditTask, onDeleteTask }) {
+function KanbanBoard({
+  tasks,
+  isMentor,
+  onDropTask,
+  onOpenTask,
+  onEditTask,
+  onDeleteTask,
+  onApproveTask,
+  onReturnTask,
+}) {
   return (
     <div className="kanban-board">
       {COLUMNS.map((column) => {
@@ -23,6 +33,8 @@ function KanbanBoard({ tasks, isMentor, onDropTask, onOpenTask, onEditTask, onDe
             onOpenTask={onOpenTask}
             onEditTask={onEditTask}
             onDeleteTask={onDeleteTask}
+            onApproveTask={onApproveTask}
+            onReturnTask={onReturnTask}
           />
         );
       })}

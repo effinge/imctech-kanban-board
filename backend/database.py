@@ -4,7 +4,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "kanban.db"
 
-STATUSES = ("backlog", "todo", "in_progress", "done")
+STATUSES = ("backlog", "todo", "in_progress", "review", "done")
 PRIORITIES = ("low", "medium", "high")
 
 
@@ -13,6 +13,13 @@ def get_connection():
     connection.row_factory = sqlite3.Row
     connection.execute("PRAGMA foreign_keys = ON")
     return connection
+
+
+def add_column_if_missing(cursor, table, column, column_type):
+    cursor.execute(f"PRAGMA table_info({table})")
+    existing_columns = {row["name"] for row in cursor.fetchall()}
+    if column not in existing_columns:
+        cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
 
 
 def init_db():
@@ -29,10 +36,13 @@ def init_db():
             deadline TEXT NOT NULL,
             status TEXT NOT NULL,
             priority TEXT NOT NULL,
+            mentor_comment TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
         """
     )
+
+    add_column_if_missing(cursor, "tasks", "mentor_comment", "TEXT")
 
     cursor.execute(
         """
