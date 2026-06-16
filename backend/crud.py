@@ -1,5 +1,5 @@
 from database import get_connection
-from schemas import TaskCreate, TaskUpdate
+from schemas import CommentCreate, TaskCreate, TaskUpdate
 
 
 def row_to_dict(row):
@@ -97,3 +97,32 @@ def get_members():
     members = [row_to_dict(row) for row in cursor.fetchall()]
     connection.close()
     return members
+
+
+def get_comments(task_id: int):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT * FROM comments WHERE task_id = ? ORDER BY id ASC", (task_id,)
+    )
+    comments = [row_to_dict(row) for row in cursor.fetchall()]
+    connection.close()
+    return comments
+
+
+def create_comment(task_id: int, comment: CommentCreate):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        INSERT INTO comments (task_id, author_role, author_name, text)
+        VALUES (?, ?, ?, ?)
+        """,
+        (task_id, comment.author_role, comment.author_name, comment.text),
+    )
+    connection.commit()
+    comment_id = cursor.lastrowid
+    cursor.execute("SELECT * FROM comments WHERE id = ?", (comment_id,))
+    created = row_to_dict(cursor.fetchone())
+    connection.close()
+    return created

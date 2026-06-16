@@ -11,7 +11,7 @@ const PRIORITY_LABELS = {
   high: 'высокий',
 };
 
-function TaskDetails({ task, isMentor, onClose, onEdit, onDelete }) {
+function TaskDetails({ task, isMentor, onClose, onEdit, onDelete, onOpenComments }) {
   return (
     <div className="details-overlay" onClick={onClose}>
       <aside className="task-details" onClick={(event) => event.stopPropagation()}>
@@ -36,6 +36,12 @@ function TaskDetails({ task, isMentor, onClose, onEdit, onDelete }) {
 
         <h3>Описание</h3>
         <p className="details-description">{task.description}</p>
+
+        <div className="details-actions">
+          <button className="primary-button" onClick={() => onOpenComments(task)}>
+            💬 Открыть комментарии
+          </button>
+        </div>
 
         {!isMentor && (
           <div className="details-actions">

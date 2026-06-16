@@ -35,3 +35,21 @@ class MemberOut(BaseModel):
     id: int
     name: str
     role: str
+
+
+CommentRole = Literal["student", "mentor"]
+
+
+class CommentCreate(BaseModel):
+    author_role: CommentRole
+    author_name: str = Field(min_length=1, max_length=120)
+    text: str = Field(min_length=1, max_length=1000)
+
+
+class CommentOut(BaseModel):
+    id: int
+    task_id: int
+    author_role: str
+    author_name: str
+    text: str
+    created_at: str

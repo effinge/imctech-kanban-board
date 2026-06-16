@@ -106,9 +106,44 @@ button {
   margin-bottom: 22px;
 }
 
-.small-progress {
-  color: #b8b8b8;
-  font-size: 13px;
+.progress-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  width: 172px;
+  margin-bottom: 10px;
+  padding: 10px 15px;
+  background: #1B1C1F;
+  border: 1px solid #272d40;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.01);
+}
+
+.progress-bubble-track {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  height: 5px;
+  border-radius: 999px;
+  background: #2b3142;
+}
+
+.progress-bubble-fill {
+  height: 10px;
+  min-width: 14px;
+  max-width: 100%;
+  border-radius: 999px;
+  background: #74e0a0;
+  box-shadow: 0 2px 8px rgba(116, 224, 160, 0.35);
+  transition: width 0.35s ease;
+}
+
+.progress-bubble-value {
+  color: #aab2c6;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .project-header h1 {
@@ -703,4 +738,150 @@ button {
   display: flex;
   gap: 10px;
   margin-top: 26px;
+}
+
+/* Отдельное окно комментариев */
+.comments-window {
+  display: flex;
+  flex-direction: column;
+  width: 560px;
+  max-height: 82vh;
+  padding: 22px;
+  background: #18191c;
+  border: 1px solid #38393e;
+  border-radius: 10px;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.55);
+}
+
+.comments-task-title {
+  margin: 4px 0 0;
+  color: #9a9ba0;
+  font-size: 13px;
+}
+
+.comments-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 4px 8px;
+  margin: 8px 0 14px;
+}
+
+.comment {
+  padding: 11px 13px;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  background: #202126;
+}
+
+/* Цветовое разделение: комментарий студента */
+.comment-student {
+  border-left-color: #2fa56e;
+  background: rgba(47, 165, 110, 0.08);
+}
+
+.comment-student .comment-author {
+  color: #6fe0a6;
+}
+
+.comment-student .comment-text {
+  color: #cdeede;
+}
+
+/* Цветовое разделение: комментарий ментора */
+.comment-mentor {
+  border-left-color: #7f78ff;
+  background: rgba(127, 120, 255, 0.1);
+}
+
+.comment-mentor .comment-author {
+  color: #b3adff;
+}
+
+.comment-mentor .comment-text {
+  color: #dddaff;
+}
+
+.comment-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.comment-author {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.comment-time {
+  margin-left: auto;
+  color: #85868b;
+  font-size: 11px;
+}
+
+/* Плашка "Ментор" */
+.mentor-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #5e5afe;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.comment-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comment-form-meta {
+  color: #a6a6aa;
+  font-size: 12px;
+}
+
+.author-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.author-chip-student {
+  background: rgba(47, 165, 110, 0.2);
+  color: #7fe0ad;
+}
+
+.author-chip-mentor {
+  background: rgba(127, 120, 255, 0.22);
+  color: #b9b3ff;
+}
+
+.comment-form textarea {
+  width: 100%;
+  min-height: 84px;
+  resize: vertical;
+  border: 1px solid #424349;
+  border-radius: 6px;
+  background: #111215;
+  color: #ffffff;
+  padding: 11px 12px;
+  outline: none;
 }

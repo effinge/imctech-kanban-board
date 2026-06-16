@@ -54,3 +54,14 @@ export function deleteTask(id) {
 export function getMembers() {
   return request('/members');
 }
+
+export function getComments(taskId) {
+  return request(`/tasks/${taskId}/comments`);
+}
+
+export function addComment(taskId, comment) {
+  return request(`/tasks/${taskId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify(comment),
+  });
+}
