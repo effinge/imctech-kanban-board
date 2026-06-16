@@ -7,8 +7,10 @@ import {
   updateTask,
   updateTaskStatus,
 } from './api/tasksApi';
+import CommentsModal from './components/CommentsModal';
 import KanbanBoard from './components/KanbanBoard';
 import ProgressBlock from './components/ProgressBlock';
+import ProgressBubble from './components/ProgressBubble';
 import RoleSwitcher from './components/RoleSwitcher';
 import TaskModal from './components/TaskModal';
 import TaskDetails from './components/TaskDetails';
@@ -21,8 +23,13 @@ function App() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [commentsTask, setCommentsTask] = useState(null);
   const [error, setError] = useState('');
   const isMentor = role === 'mentor';
+
+  function openComments(task) {
+    setCommentsTask(task);
+  }
 
   useEffect(() => {
     loadData();
@@ -136,7 +143,7 @@ function App() {
         <section className="project-layout">
           <div className="project-header">
             <div>
-              <span className="small-progress">прогресс: {projectProgress.percent}%</span>
+              <ProgressBubble percent={projectProgress.percent} />
               <h1>Название проекта</h1>
             </div>
             <RoleSwitcher role={role} onRoleChange={setRole} />
@@ -205,6 +212,15 @@ function App() {
           onClose={() => setSelectedTask(null)}
           onEdit={openEditModal}
           onDelete={handleDeleteTask}
+          onOpenComments={openComments}
+        />
+      )}
+
+      {commentsTask && (
+        <CommentsModal
+          task={commentsTask}
+          role={role}
+          onClose={() => setCommentsTask(null)}
         />
       )}
     </div>

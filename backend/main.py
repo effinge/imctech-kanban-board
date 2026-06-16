@@ -3,7 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import crud
 from database import init_db
-from schemas import MemberOut, StatusUpdate, TaskCreate, TaskOut, TaskUpdate
+from schemas import (
+    CommentCreate,
+    CommentOut,
+    MemberOut,
+    StatusUpdate,
+    TaskCreate,
+    TaskOut,
+    TaskUpdate,
+)
 
 app = FastAPI(title="IMCTECH Kanban MVP")
 
@@ -50,6 +58,20 @@ def remove_task(task_id: int):
     if not crud.delete_task(task_id):
         raise HTTPException(status_code=404, detail="Задача не найдена")
     return {"message": "Задача удалена"}
+
+
+@app.get("/api/tasks/{task_id}/comments", response_model=list[CommentOut])
+def read_comments(task_id: int):
+    if not crud.get_task(task_id):
+        raise HTTPException(status_code=404, detail="Задача не найдена")
+    return crud.get_comments(task_id)
+
+
+@app.post("/api/tasks/{task_id}/comments", response_model=CommentOut)
+def add_comment(task_id: int, comment: CommentCreate):
+    if not crud.get_task(task_id):
+        raise HTTPException(status_code=404, detail="Задача не найдена")
+    return crud.create_comment(task_id, comment)
 
 
 @app.get("/api/members", response_model=list[MemberOut])
