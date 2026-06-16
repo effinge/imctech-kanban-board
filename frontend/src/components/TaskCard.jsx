@@ -26,8 +26,17 @@ function formatDate(date) {
   });
 }
 
-function TaskCard({ task, isMentor, onOpenTask, onEditTask, onDeleteTask }) {
+function TaskCard({
+  task,
+  isMentor,
+  onOpenTask,
+  onEditTask,
+  onDeleteTask,
+  onApproveTask,
+  onReturnTask,
+}) {
   const overdue = isTaskOverdue(task);
+  const isUnderReview = task.status === 'review';
 
   function handleDragStart(event) {
     event.dataTransfer.setData('taskId', task.id);
@@ -62,6 +71,28 @@ function TaskCard({ task, isMentor, onOpenTask, onEditTask, onDeleteTask }) {
       </div>
 
       {overdue && <div className="overdue-text">Просрочено</div>}
+
+      {task.mentor_comment && (
+        <div className="mentor-comment">
+          <span className="mentor-comment-label">↩ Комментарий ментора</span>
+          {task.mentor_comment}
+        </div>
+      )}
+
+      {isUnderReview && isMentor && (
+        <div className="review-actions" onClick={stopClick}>
+          <button className="review-approve" onClick={() => onApproveTask(task.id)}>
+            ✓ Подтвердить
+          </button>
+          <button className="review-return" onClick={() => onReturnTask(task)}>
+            ↩ Вернуть
+          </button>
+        </div>
+      )}
+
+      {isUnderReview && !isMentor && (
+        <div className="review-pending">⏳ Ждёт проверки ментора</div>
+      )}
 
       {!isMentor && (
         <div className="task-actions" onClick={stopClick}>

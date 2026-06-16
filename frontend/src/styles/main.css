@@ -260,11 +260,18 @@ button {
 }
 
 .mentor-note,
-.error-message {
+.error-message,
+.notice-message {
   margin-bottom: 16px;
   padding: 13px 16px;
   border-radius: 8px;
   font-size: 14px;
+}
+
+.notice-message {
+  background: rgba(79, 157, 255, 0.14);
+  border: 1px solid rgba(79, 157, 255, 0.4);
+  color: #cfe4ff;
 }
 
 .mentor-note {
@@ -281,8 +288,8 @@ button {
 
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(230px, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(5, minmax(196px, 1fr));
+  gap: 18px;
   min-height: 520px;
 }
 
@@ -303,6 +310,10 @@ button {
 
 .column-in_progress {
   background: #292819;
+}
+
+.column-review {
+  background: #18212e;
 }
 
 .column-done {
@@ -337,6 +348,10 @@ button {
 
 .column-in_progress .status-dot {
   background: #cfa425;
+}
+
+.column-review .status-dot {
+  background: #4f9dff;
 }
 
 .column-done .status-dot {
@@ -461,6 +476,85 @@ button {
   padding: 7px 8px;
   border-radius: 4px;
   font-size: 12px;
+}
+
+.mentor-comment {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(207, 164, 37, 0.12);
+  border: 1px solid rgba(207, 164, 37, 0.4);
+  color: #f4e3b4;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.mentor-comment-label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 700;
+  font-size: 11px;
+  color: #e8c969;
+}
+
+.details-mentor-comment {
+  margin: 18px 0 0;
+  font-size: 13px;
+}
+
+.review-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.review-actions button {
+  flex: 1;
+  border: 0;
+  padding: 8px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.review-approve {
+  background: #1f9d63;
+}
+
+.review-approve:hover {
+  background: #25b372;
+}
+
+.review-return {
+  background: #b06a2c;
+}
+
+.review-return:hover {
+  background: #c87d38;
+}
+
+.review-pending {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(79, 157, 255, 0.12);
+  border: 1px solid rgba(79, 157, 255, 0.32);
+  color: #bcd9ff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.review-panel {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(79, 157, 255, 0.08);
+  border: 1px solid rgba(79, 157, 255, 0.3);
+}
+
+.review-panel .muted-text {
+  margin: 0 0 12px;
 }
 
 /* Правая выезжающая панель с прогрессом и участниками */
