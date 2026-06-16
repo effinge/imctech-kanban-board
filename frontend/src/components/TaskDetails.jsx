@@ -2,6 +2,7 @@ const STATUS_LABELS = {
   backlog: 'Бэклог',
   todo: 'Нужно сделать',
   in_progress: 'В процессе',
+  review: 'На проверке',
   done: 'Выполнено',
 };
 
@@ -11,7 +12,9 @@ const PRIORITY_LABELS = {
   high: 'высокий',
 };
 
-function TaskDetails({ task, isMentor, onClose, onEdit, onDelete }) {
+function TaskDetails({ task, isMentor, onClose, onEdit, onDelete, onApprove, onReturn }) {
+  const isUnderReview = task.status === 'review';
+
   return (
     <div className="details-overlay" onClick={onClose}>
       <aside className="task-details" onClick={(event) => event.stopPropagation()}>
@@ -36,6 +39,31 @@ function TaskDetails({ task, isMentor, onClose, onEdit, onDelete }) {
 
         <h3>Описание</h3>
         <p className="details-description">{task.description}</p>
+
+        {task.mentor_comment && (
+          <div className="mentor-comment details-mentor-comment">
+            <span className="mentor-comment-label">↩ Комментарий ментора</span>
+            {task.mentor_comment}
+          </div>
+        )}
+
+        {isUnderReview && isMentor && (
+          <div className="review-panel">
+            <p className="muted-text">Студент отправил задачу на проверку.</p>
+            <div className="review-actions">
+              <button className="review-approve" onClick={() => onApprove(task.id)}>
+                ✓ Подтвердить
+              </button>
+              <button className="review-return" onClick={() => onReturn(task)}>
+                ↩ Вернуть с комментарием
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isUnderReview && !isMentor && (
+          <div className="review-pending">⏳ Задача ждёт проверки ментора</div>
+        )}
 
         {!isMentor && (
           <div className="details-actions">

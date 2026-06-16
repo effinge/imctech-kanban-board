@@ -3,7 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import crud
 from database import init_db
-from schemas import MemberOut, StatusUpdate, TaskCreate, TaskOut, TaskUpdate
+from schemas import (
+    MemberOut,
+    ReviewDecision,
+    StatusUpdate,
+    TaskCreate,
+    TaskOut,
+    TaskUpdate,
+)
 
 app = FastAPI(title="IMCTECH Kanban MVP")
 
@@ -43,6 +50,18 @@ def change_task_status(task_id: int, status_data: StatusUpdate):
     if not crud.get_task(task_id):
         raise HTTPException(status_code=404, detail="Задача не найдена")
     return crud.update_task_status(task_id, status_data.status)
+
+
+@app.patch("/api/tasks/{task_id}/review", response_model=TaskOut)
+def review_task(task_id: int, decision: ReviewDecision):
+    task = crud.get_task(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Задача не найдена")
+    if task["status"] != "review":
+        raise HTTPException(status_code=409, detail="Задача не находится на проверке")
+    if decision.action == "return" and not decision.comment.strip():
+        raise HTTPException(status_code=422, detail="Нужен комментарий для возврата задачи")
+    return crud.review_task(task_id, decision.action, decision.comment.strip())
 
 
 @app.delete("/api/tasks/{task_id}")

@@ -1,6 +1,16 @@
 import TaskCard from './TaskCard';
 
-function KanbanColumn({ column, tasks, isMentor, onDropTask, onOpenTask, onEditTask, onDeleteTask }) {
+function KanbanColumn({
+  column,
+  tasks,
+  isMentor,
+  onDropTask,
+  onOpenTask,
+  onEditTask,
+  onDeleteTask,
+  onApproveTask,
+  onReturnTask,
+}) {
   function handleDragOver(event) {
     if (!isMentor) {
       event.preventDefault();
@@ -36,6 +46,8 @@ function KanbanColumn({ column, tasks, isMentor, onDropTask, onOpenTask, onEditT
             onOpenTask={onOpenTask}
             onEditTask={onEditTask}
             onDeleteTask={onDeleteTask}
+            onApproveTask={onApproveTask}
+            onReturnTask={onReturnTask}
           />
         ))}
       </div>

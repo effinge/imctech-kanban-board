@@ -1,8 +1,9 @@
 from typing import Literal
 from pydantic import BaseModel, Field
 
-TaskStatus = Literal["backlog", "todo", "in_progress", "done"]
+TaskStatus = Literal["backlog", "todo", "in_progress", "review", "done"]
 TaskPriority = Literal["low", "medium", "high"]
+ReviewAction = Literal["approve", "return"]
 
 
 class TaskBase(BaseModel):
@@ -26,8 +27,14 @@ class StatusUpdate(BaseModel):
     status: TaskStatus
 
 
+class ReviewDecision(BaseModel):
+    action: ReviewAction
+    comment: str = Field(default="", max_length=1000)
+
+
 class TaskOut(TaskBase):
     id: int
+    mentor_comment: str | None = None
     created_at: str
 
 

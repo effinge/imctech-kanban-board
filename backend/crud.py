@@ -74,7 +74,31 @@ def update_task(task_id: int, task: TaskUpdate):
 def update_task_status(task_id: int, status: str):
     connection = get_connection()
     cursor = connection.cursor()
-    cursor.execute("UPDATE tasks SET status = ? WHERE id = ?", (status, task_id))
+    if status == "review":
+        cursor.execute(
+            "UPDATE tasks SET status = ?, mentor_comment = NULL WHERE id = ?",
+            (status, task_id),
+        )
+    else:
+        cursor.execute("UPDATE tasks SET status = ? WHERE id = ?", (status, task_id))
+    connection.commit()
+    connection.close()
+    return get_task(task_id)
+
+
+def review_task(task_id: int, action: str, comment: str):
+    connection = get_connection()
+    cursor = connection.cursor()
+    if action == "approve":
+        cursor.execute(
+            "UPDATE tasks SET status = 'done', mentor_comment = NULL WHERE id = ?",
+            (task_id,),
+        )
+    else:
+        cursor.execute(
+            "UPDATE tasks SET status = 'in_progress', mentor_comment = ? WHERE id = ?",
+            (comment, task_id),
+        )
     connection.commit()
     connection.close()
     return get_task(task_id)

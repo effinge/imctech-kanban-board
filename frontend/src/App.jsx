@@ -4,6 +4,7 @@ import {
   deleteTask,
   getMembers,
   getTasks,
+  reviewTask,
   updateTask,
   updateTaskStatus,
 } from './api/tasksApi';
@@ -22,7 +23,22 @@ function App() {
   const [editingTask, setEditingTask] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const isMentor = role === 'mentor';
+
+  function showNotice(message) {
+    setNotice(message);
+    window.setTimeout(() => setNotice(''), 4000);
+  }
+
+  function applyTaskUpdate(updatedTask) {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+    );
+    setSelectedTask((current) =>
+      current && current.id === updatedTask.id ? updatedTask : current
+    );
+  }
 
   useEffect(() => {
     loadData();
@@ -89,19 +105,54 @@ function App() {
     }
 
     const task = tasks.find((currentTask) => currentTask.id === taskId);
-    if (!task || task.status === newStatus) {
+    if (!task) {
+      return;
+    }
+
+    // Киллер-фича: студент не закрывает задачу сам — перенос в «Выполнено»
+    // отправляет её ментору на проверку.
+    const targetStatus = newStatus === 'done' ? 'review' : newStatus;
+    if (task.status === targetStatus) {
       return;
     }
 
     try {
-      const updatedTask = await updateTaskStatus(taskId, newStatus);
-      setTasks((currentTasks) =>
-        currentTasks.map((currentTask) =>
-          currentTask.id === updatedTask.id ? updatedTask : currentTask
-        )
-      );
+      const updatedTask = await updateTaskStatus(taskId, targetStatus);
+      applyTaskUpdate(updatedTask);
+      if (targetStatus === 'review') {
+        showNotice('Задача отправлена ментору на проверку.');
+      }
     } catch (currentError) {
       setError('Не удалось изменить статус задачи.');
+    }
+  }
+
+  async function handleApproveTask(taskId) {
+    try {
+      const updatedTask = await reviewTask(taskId, 'approve');
+      applyTaskUpdate(updatedTask);
+      showNotice('Задача подтверждена и перенесена в «Выполнено».');
+    } catch (currentError) {
+      setError('Не удалось подтвердить задачу.');
+    }
+  }
+
+  async function handleReturnTask(task) {
+    const comment = window.prompt('Комментарий для студента: что доработать?');
+    if (comment === null) {
+      return;
+    }
+    if (!comment.trim()) {
+      setError('Чтобы вернуть задачу, нужен комментарий.');
+      return;
+    }
+
+    try {
+      const updatedTask = await reviewTask(task.id, 'return', comment.trim());
+      applyTaskUpdate(updatedTask);
+      showNotice('Задача возвращена студенту с комментарием.');
+    } catch (currentError) {
+      setError('Не удалось вернуть задачу.');
     }
   }
 
@@ -169,6 +220,7 @@ function App() {
                 </div>
               )}
 
+              {notice && <div className="notice-message">{notice}</div>}
               {error && <div className="error-message">{error}</div>}
 
               <KanbanBoard
@@ -178,6 +230,8 @@ function App() {
                 onOpenTask={setSelectedTask}
                 onEditTask={openEditModal}
                 onDeleteTask={handleDeleteTask}
+                onApproveTask={handleApproveTask}
+                onReturnTask={handleReturnTask}
               />
             </section>
 
@@ -205,6 +259,8 @@ function App() {
           onClose={() => setSelectedTask(null)}
           onEdit={openEditModal}
           onDelete={handleDeleteTask}
+          onApprove={handleApproveTask}
+          onReturn={handleReturnTask}
         />
       )}
     </div>

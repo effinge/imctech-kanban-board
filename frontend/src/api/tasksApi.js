@@ -45,6 +45,13 @@ export function updateTaskStatus(id, status) {
   });
 }
 
+export function reviewTask(id, action, comment = '') {
+  return request(`/tasks/${id}/review`, {
+    method: 'PATCH',
+    body: JSON.stringify({ action, comment }),
+  });
+}
+
 export function deleteTask(id) {
   return request(`/tasks/${id}`, {
     method: 'DELETE',
