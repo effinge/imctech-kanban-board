@@ -1,6 +1,4 @@
-#!/usr/bin/env bash
-# Запуск проекта IMCTECH Kanban: backend (FastAPI) + frontend (Vite).
-# Использование: ./run.sh
+
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
