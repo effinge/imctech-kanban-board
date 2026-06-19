@@ -16,6 +16,16 @@ import RoleSwitcher from './components/RoleSwitcher';
 import TaskModal from './components/TaskModal';
 import TaskDetails from './components/TaskDetails';
 import TeamMembers from './components/TeamMembers';
+import {
+  BriefcaseIcon,
+  BuildingIcon,
+  CalendarIcon,
+  HomeIcon,
+  KanbanIcon,
+  MenuIcon,
+  UserIcon,
+  UsersIcon,
+} from './components/icons';
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -174,21 +184,21 @@ function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="sidebar-logo">☰</div>
+        <div className="sidebar-logo"><MenuIcon size={20} /></div>
         <nav className="sidebar-nav">
-          <a href="#" className="nav-item">▦ <span>Главная</span></a>
-          <a href="#" className="nav-item">◴ <span>Мероприятия</span></a>
-          <a href="#" className="nav-item">● <span>Пользователи</span></a>
-          <a href="#" className="nav-item">▦ <span>Компании</span></a>
-          <a href="#" className="nav-item">▣ <span>Кейсы</span></a>
-          <a href="#" className="nav-item active">▤ <span>Проекты</span></a>
+          <a href="#" className="nav-item"><HomeIcon /> <span>Главная</span></a>
+          <a href="#" className="nav-item"><CalendarIcon /> <span>Мероприятия</span></a>
+          <a href="#" className="nav-item"><UsersIcon /> <span>Пользователи</span></a>
+          <a href="#" className="nav-item"><BuildingIcon /> <span>Компании</span></a>
+          <a href="#" className="nav-item"><BriefcaseIcon /> <span>Кейсы</span></a>
+          <a href="#" className="nav-item active"><KanbanIcon /> <span>Проекты</span></a>
         </nav>
       </aside>
 
       <main className="page">
         <header className="topbar">
           <div className="topbar-title">Проекты</div>
-          <div className="topbar-user">●</div>
+          <div className="topbar-user"><UserIcon size={22} /></div>
         </header>
 
         <section className="project-layout">
