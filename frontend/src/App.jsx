@@ -34,6 +34,9 @@ import {
   UsersIcon,
 } from './components/icons';
 
+const PROJECT_TITLE_STORAGE_PREFIX = 'imctech_project_title_';
+const PRIORITY_WEIGHT = { high: 0, medium: 1, low: 2 };
+
 function App() {
   const [tasks, setTasks] = useState([]);
   const [projectMembers, setProjectMembers] = useState([]);
@@ -47,6 +50,11 @@ function App() {
   const [commentsTask, setCommentsTask] = useState(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+
+  const [titleOverrides, setTitleOverrides] = useState({});
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState('');
+  const [sortOption, setSortOption] = useState('default');
 
   const role = currentUser?.system_role || 'student';
   const isMentor = role === 'mentor';
@@ -70,12 +78,15 @@ function App() {
   }
 
   useEffect(() => {
-    loadAccounts();
-  }, []);
-
-  useEffect(() => {
     if (currentUser && activeProjectId) {
       loadBoard(activeProjectId);
+      setIsEditingTitle(false);
+      const savedTitle = localStorage.getItem(
+        `${PROJECT_TITLE_STORAGE_PREFIX}${activeProjectId}`
+      );
+      if (savedTitle) {
+        setTitleOverrides((current) => ({ ...current, [activeProjectId]: savedTitle }));
+      }
     }
   }, [currentUser, activeProjectId]);
 
@@ -113,6 +124,33 @@ function App() {
     setCommentsTask(null);
     setIsTaskModalOpen(false);
     setEditingTask(null);
+  }
+
+  function startEditingTitle() {
+    if (!canEditProjectTitle) {
+      return;
+    }
+    setTitleDraft(displayedProjectTitle);
+    setIsEditingTitle(true);
+  }
+
+  function commitTitleChange() {
+    const trimmedTitle = titleDraft.trim();
+    const finalTitle = trimmedTitle === '' ? activeProject?.name || 'Проект' : trimmedTitle;
+
+    setTitleOverrides((current) => ({ ...current, [activeProjectId]: finalTitle }));
+    localStorage.setItem(`${PROJECT_TITLE_STORAGE_PREFIX}${activeProjectId}`, finalTitle);
+    setIsEditingTitle(false);
+  }
+
+  function handleTitleKeyDown(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      commitTitleChange();
+    } else if (event.key === 'Escape') {
+      setTitleDraft(displayedProjectTitle);
+      setIsEditingTitle(false);
+    }
   }
 
   function openCreateModal() {
@@ -256,6 +294,9 @@ function App() {
 
   const activeProject = projects.find((project) => project.id === activeProjectId);
 
+  const displayedProjectTitle =
+    titleOverrides[activeProjectId] ?? activeProject?.name ?? 'Проект';
+
   const myMembership =
     projectMembers.find((member) => member.user_id === currentUser?.id) || null;
   const isStudent = role === 'student';
@@ -269,6 +310,7 @@ function App() {
   const canAssignLead = isMentor;
   const canManageRoles = isStudent && isLead;
   const canAddParticipant = isMentor || (isStudent && isLead);
+  const canEditProjectTitle = canManageTasks;
 
   // Руководитель и ментор видят все задачи проекта; обычный участник —
   // только назначенные ему карточки.
@@ -350,7 +392,29 @@ function App() {
           <div className="project-header">
             <div>
               <ProgressBubble percent={projectProgress.percent} />
-              <h1>{activeProject?.name || 'Проект'}</h1>
+
+              {isEditingTitle ? (
+                <input
+                  type="text"
+                  className="project-title-input"
+                  value={titleDraft}
+                  autoFocus
+                  onChange={(event) => setTitleDraft(event.target.value)}
+                  onBlur={commitTitleChange}
+                  onKeyDown={handleTitleKeyDown}
+                  maxLength={120}
+                />
+              ) : (
+                <h1
+                  className={`project-title ${canEditProjectTitle ? 'project-title-editable' : ''}`}
+                  onClick={startEditingTitle}
+                  title={canEditProjectTitle ? 'Нажмите, чтобы переименовать проект' : ''}
+                >
+                  {displayedProjectTitle}
+                  {canEditProjectTitle && <span className="project-title-edit-icon">✎</span>}
+                </h1>
+              )}
+
               <p className="project-role-line">{projectRoleLine()}</p>
             </div>
             <ProjectSwitcher
