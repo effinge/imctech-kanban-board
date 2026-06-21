@@ -1417,11 +1417,20 @@ button {
 
 .comment-markdown a:hover { color: #aaa9ff; }
 
+.md-image-link {
+  display: block;
+  margin: 6px 0;
+}
+
+.md-image-link:hover img {
+  opacity: 0.88;
+}
+
 .comment-markdown img {
   max-width: 100%;
   border-radius: 6px;
-  margin: 6px 0;
   display: block;
+  cursor: pointer;
 }
 
 .comment-markdown table {

@@ -8,8 +8,18 @@ const ROLE_NAMES = {
   mentor: 'Ментор',
 };
 
-const IMAGE_MAX_PX = 900;
-const IMAGE_QUALITY = 0.82;
+const MD_COMPONENTS = {
+  img({ src, alt }) {
+    return (
+      <a href={src} target="_blank" rel="noreferrer" className="md-image-link">
+        <img src={src} alt={alt} />
+      </a>
+    );
+  },
+};
+
+const IMAGE_MAX_PX = 560;
+const IMAGE_QUALITY = 0.65;
 
 const TOOLBAR_ITEMS = [
   { label: 'B',   title: 'Жирный',      wrap: ['**', '**'],       block: false },
@@ -40,7 +50,9 @@ function resizeToDataUrl(file) {
       img.onerror = reject;
       img.onload = () => {
         let { width: w, height: h } = img;
-        if (w > IMAGE_MAX_PX) { h = Math.round(h * IMAGE_MAX_PX / w); w = IMAGE_MAX_PX; }
+        const scale = Math.min(1, IMAGE_MAX_PX / Math.max(w, h));
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
         const canvas = document.createElement('canvas');
         canvas.width = w;
         canvas.height = h;
@@ -123,6 +135,7 @@ function CommentsModal({ task, role, authorName, onClose }) {
       const dataUrl = await resizeToDataUrl(file);
       const name = file.name.replace(/\.[^.]+$/, '');
       insertMarkdown(`![${name}](${dataUrl})`);
+      setIsPreview(true);
     } catch {
       setError('Не удалось обработать изображение.');
     } finally {
@@ -182,7 +195,7 @@ function CommentsModal({ task, role, authorName, onClose }) {
                 <span className="comment-time">{formatDateTime(comment.created_at)}</span>
               </div>
               <div className="comment-body comment-markdown">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} urlTransform={(u) => u} components={MD_COMPONENTS}>
                   {comment.text}
                 </ReactMarkdown>
               </div>
@@ -261,7 +274,6 @@ function CommentsModal({ task, role, authorName, onClose }) {
                 value={text}
                 onChange={(event) => setText(event.target.value)}
                 placeholder=""
-                maxLength={100000}
               />
             )}
           </div>
