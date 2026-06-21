@@ -10,7 +10,9 @@ const COLUMNS = [
 
 function KanbanBoard({
   tasks,
-  isMentor,
+  canDrag,
+  canManageTasks,
+  canReview,
   onDropTask,
   onOpenTask,
   onEditTask,
@@ -28,7 +30,9 @@ function KanbanBoard({
             key={column.key}
             column={column}
             tasks={columnTasks}
-            isMentor={isMentor}
+            canDrag={canDrag}
+            canManageTasks={canManageTasks}
+            canReview={canReview}
             onDropTask={onDropTask}
             onOpenTask={onOpenTask}
             onEditTask={onEditTask}

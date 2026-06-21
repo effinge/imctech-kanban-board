@@ -1200,3 +1200,58 @@ button {
   font-weight: 800;
   white-space: nowrap;
 }
+
+/* Назначение ролей и добавление участников */
+.role-select {
+  margin-top: 6px;
+  width: 100%;
+  border: 1px solid #3a3b40;
+  background: #111215;
+  color: #ffffff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  outline: none;
+  font-size: 12px;
+}
+
+.assign-button {
+  flex-shrink: 0;
+  align-self: center;
+  border: 1px solid #4a47b8;
+  background: rgba(94, 90, 254, 0.16);
+  color: #c5c1ff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.assign-button:hover {
+  background: rgba(94, 90, 254, 0.3);
+  color: #ffffff;
+}
+
+.add-member {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #2c2d31;
+}
+
+.add-member select {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #3a3b40;
+  background: #111215;
+  color: #ffffff;
+  padding: 9px 10px;
+  border-radius: 8px;
+  outline: none;
+  font-size: 13px;
+}
+
+.add-member .secondary-button {
+  white-space: nowrap;
+}

@@ -28,7 +28,9 @@ function formatDate(date) {
 
 function TaskCard({
   task,
-  isMentor,
+  canDrag,
+  canManageTasks,
+  canReview,
   onOpenTask,
   onEditTask,
   onDeleteTask,
@@ -49,7 +51,7 @@ function TaskCard({
   return (
     <article
       className={overdue ? 'task-card overdue' : 'task-card'}
-      draggable={!isMentor}
+      draggable={canDrag}
       onDragStart={handleDragStart}
       onClick={() => onOpenTask(task)}
     >
@@ -79,7 +81,7 @@ function TaskCard({
         </div>
       )}
 
-      {isUnderReview && isMentor && (
+      {isUnderReview && canReview && (
         <div className="review-actions" onClick={stopClick}>
           <button className="review-approve" onClick={() => onApproveTask(task.id)}>
             ✓ Подтвердить
@@ -90,11 +92,11 @@ function TaskCard({
         </div>
       )}
 
-      {isUnderReview && !isMentor && (
+      {isUnderReview && !canReview && (
         <div className="review-pending">⏳ Ждёт проверки ментора</div>
       )}
 
-      {!isMentor && (
+      {canManageTasks && (
         <div className="task-actions" onClick={stopClick}>
           <button onClick={() => onEditTask(task)}>Изменить</button>
           <button onClick={() => onDeleteTask(task.id)}>Удалить</button>

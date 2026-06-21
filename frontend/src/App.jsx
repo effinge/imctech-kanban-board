@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  addProjectMember,
+  assignLead,
+  assignSpecialty,
   createTask,
   deleteTask,
   getProjectMembers,
@@ -48,13 +51,13 @@ function App() {
   const role = currentUser?.system_role || 'student';
   const isMentor = role === 'mentor';
 
-  function openComments(task) {
-    setCommentsTask(task);
-  }
-
   function showNotice(message) {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 4000);
+  }
+
+  function openComments(task) {
+    setCommentsTask(task);
   }
 
   function applyTaskUpdate(updatedTask) {
@@ -157,7 +160,7 @@ function App() {
   }
 
   async function handleDropTask(taskId, newStatus) {
-    if (isMentor) {
+    if (!canDrag) {
       return;
     }
 
@@ -213,6 +216,36 @@ function App() {
     }
   }
 
+  async function handleAssignLead(userId) {
+    try {
+      const updatedMembers = await assignLead(activeProjectId, userId);
+      setProjectMembers(updatedMembers);
+      showNotice('Назначен руководитель проекта.');
+    } catch (currentError) {
+      setError('Не удалось назначить руководителя.');
+    }
+  }
+
+  async function handleAssignSpecialty(userId, specialty) {
+    try {
+      const updatedMembers = await assignSpecialty(activeProjectId, userId, specialty);
+      setProjectMembers(updatedMembers);
+      showNotice('Добавочная роль обновлена.');
+    } catch (currentError) {
+      setError('Не удалось изменить роль участника.');
+    }
+  }
+
+  async function handleAddParticipant(userId) {
+    try {
+      const updatedMembers = await addProjectMember(activeProjectId, userId);
+      setProjectMembers(updatedMembers);
+      showNotice('Участник добавлен в проект.');
+    } catch (currentError) {
+      setError('Не удалось добавить участника.');
+    }
+  }
+
   const projectProgress = useMemo(() => {
     const total = tasks.length;
     const done = tasks.filter((task) => task.status === 'done').length;
@@ -225,6 +258,17 @@ function App() {
 
   const myMembership =
     projectMembers.find((member) => member.user_id === currentUser?.id) || null;
+  const isStudent = role === 'student';
+  const isMember = Boolean(myMembership);
+  const isLead = Boolean(myMembership?.is_lead);
+
+  // Права по ролям внутри активного проекта.
+  const canReview = isMentor;
+  const canDrag = isStudent && isMember;
+  const canManageTasks = isStudent && isLead; // создание/редактирование/удаление задач
+  const canAssignLead = isMentor;
+  const canManageRoles = isStudent && isLead;
+  const canAddParticipant = isMentor || (isStudent && isLead);
 
   function projectRoleLine() {
     if (!myMembership) {
@@ -239,10 +283,30 @@ function App() {
       : `Участник · ${specialty}`;
   }
 
-  // В форме задачи исполнитель выбирается из студентов проекта.
+  function boardNote() {
+    if (isMentor) {
+      return 'Режим ментора: просмотр доски, проверка задач (подтвердить / вернуть), назначение руководителя и добавление участников.';
+    }
+    if (!isMember) {
+      return 'Вы не участник этого проекта — доступен только просмотр.';
+    }
+    if (isLead) {
+      return 'Вы руководитель проекта: можно создавать и редактировать задачи, назначать добавочные роли и добавлять участников.';
+    }
+    return 'Вы участник проекта: можно перемещать карточки и комментировать. Создание и редактирование задач — у руководителя.';
+  }
+
+  // Исполнитель в форме задачи выбирается из студентов проекта.
   const assignableMembers = projectMembers
     .filter((member) => member.system_role === 'student')
     .map((member) => ({ id: member.user_id, name: member.name }));
+
+  // Кого можно добавить в проект — студенты, которых там ещё нет.
+  const addableUsers = users.filter(
+    (user) =>
+      user.system_role === 'student' &&
+      !projectMembers.some((member) => member.user_id === user.id)
+  );
 
   if (!currentUser) {
     return <LoginScreen users={users} onLogin={setCurrentUser} error={error} />;
@@ -303,25 +367,27 @@ function App() {
                 <button
                   className="primary-button"
                   onClick={openCreateModal}
-                  disabled={isMentor}
-                  title={isMentor ? 'Ментор просматривает проект без редактирования' : ''}
+                  disabled={!canManageTasks}
+                  title={
+                    canManageTasks
+                      ? ''
+                      : 'Создавать задачи может только руководитель проекта'
+                  }
                 >
                   Создать +
                 </button>
               </div>
 
-              {isMentor && (
-                <div className="mentor-note">
-                  Режим ментора: можно просматривать доску, прогресс и участников. Изменение задач ограничено.
-                </div>
-              )}
+              <div className="mentor-note">{boardNote()}</div>
 
               {notice && <div className="notice-message">{notice}</div>}
               {error && <div className="error-message">{error}</div>}
 
               <KanbanBoard
                 tasks={tasks}
-                isMentor={isMentor}
+                canDrag={canDrag}
+                canManageTasks={canManageTasks}
+                canReview={canReview}
                 onDropTask={handleDropTask}
                 onOpenTask={setSelectedTask}
                 onEditTask={openEditModal}
@@ -333,7 +399,17 @@ function App() {
 
             <aside className="workspace-sidebar">
               <ProgressBlock progress={projectProgress} />
-              <TeamMembers members={projectMembers} />
+              <TeamMembers
+                members={projectMembers}
+                currentUserId={currentUser.id}
+                canAssignLead={canAssignLead}
+                canManageRoles={canManageRoles}
+                canAddParticipant={canAddParticipant}
+                addableUsers={addableUsers}
+                onAssignLead={handleAssignLead}
+                onAssignSpecialty={handleAssignSpecialty}
+                onAddParticipant={handleAddParticipant}
+              />
             </aside>
           </div>
         </section>
@@ -351,7 +427,8 @@ function App() {
       {selectedTask && (
         <TaskDetails
           task={selectedTask}
-          isMentor={isMentor}
+          canManageTasks={canManageTasks}
+          canReview={canReview}
           onClose={() => setSelectedTask(null)}
           onEdit={openEditModal}
           onDelete={handleDeleteTask}
@@ -365,6 +442,7 @@ function App() {
         <CommentsModal
           task={commentsTask}
           role={role}
+          authorName={currentUser.name}
           onClose={() => setCommentsTask(null)}
         />
       )}
