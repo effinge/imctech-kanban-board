@@ -20,8 +20,9 @@ async function request(path, options = {}) {
   return response.json();
 }
 
-export function getTasks() {
-  return request('/tasks');
+export function getTasks(projectId) {
+  const query = projectId ? `?project_id=${projectId}` : '';
+  return request(`/tasks${query}`);
 }
 
 export function createTask(task) {
@@ -60,6 +61,14 @@ export function deleteTask(id) {
 
 export function getMembers() {
   return request('/members');
+}
+
+export function getProjects() {
+  return request('/projects');
+}
+
+export function getUsers() {
+  return request('/users');
 }
 
 export function getComments(taskId) {
