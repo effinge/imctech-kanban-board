@@ -886,7 +886,7 @@ button {
   color: #6fe0a6;
 }
 
-.comment-student .comment-text {
+.comment-student .comment-body {
   color: #cdeede;
 }
 
@@ -900,7 +900,7 @@ button {
   color: #b3adff;
 }
 
-.comment-mentor .comment-text {
+.comment-mentor .comment-body {
   color: #dddaff;
 }
 
@@ -936,11 +936,10 @@ button {
   text-transform: uppercase;
 }
 
-.comment-text {
+.comment-body {
   margin: 0;
   font-size: 13px;
   line-height: 1.5;
-  white-space: pre-wrap;
   word-break: break-word;
 }
 
@@ -1254,4 +1253,200 @@ button {
 
 .add-member .secondary-button {
   white-space: nowrap;
+}
+
+/* ── Markdown editor (CommentsModal) ─────────────────────────────────── */
+
+.comment-editor {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #3a3b40;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.editor-tabs {
+  display: flex;
+  align-items: center;
+  background: #111215;
+  border-bottom: 1px solid #3a3b40;
+  padding: 0 8px;
+  gap: 2px;
+}
+
+.editor-tab {
+  background: none;
+  border: none;
+  color: #888;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color .15s;
+}
+
+.editor-tab:hover { color: #ccc; }
+
+.editor-tab.active {
+  color: #ffffff;
+  border-bottom-color: #5e5afe;
+}
+
+.editor-toolbar {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+  padding: 4px 0;
+}
+
+.toolbar-btn {
+  background: none;
+  border: none;
+  color: #888;
+  padding: 4px 7px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-family: 'Fira Mono', monospace;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+.toolbar-btn:hover {
+  background: #2a2b30;
+  color: #eee;
+}
+
+.comment-editor textarea {
+  border: none;
+  border-radius: 0;
+  background: #18191d;
+  color: #eeeeee;
+  padding: 12px;
+  min-height: 100px;
+  resize: vertical;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.editor-preview {
+  background: #18191d;
+  padding: 12px 14px;
+  min-height: 100px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #ddd;
+}
+
+/* ── Markdown content styles (comments + preview) ────────────────────── */
+
+.comment-markdown p  { margin: 0 0 6px; }
+.comment-markdown p:last-child { margin-bottom: 0; }
+
+.comment-markdown h1,
+.comment-markdown h2,
+.comment-markdown h3 {
+  margin: 10px 0 4px;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.comment-markdown h1 { font-size: 16px; }
+.comment-markdown h2 { font-size: 15px; }
+.comment-markdown h3 { font-size: 14px; }
+
+.comment-markdown strong { color: #ffffff; }
+.comment-markdown em    { color: #c5c1ff; font-style: italic; }
+
+.comment-markdown del {
+  text-decoration: line-through;
+  color: #777;
+}
+
+.comment-markdown code {
+  background: #111215;
+  border: 1px solid #2c2d31;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-size: 12.5px;
+  color: #c5c1ff;
+}
+
+.comment-markdown pre {
+  background: #111215;
+  border: 1px solid #2c2d31;
+  border-radius: 6px;
+  padding: 10px 14px;
+  overflow-x: auto;
+  margin: 6px 0;
+}
+
+.comment-markdown pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  color: #d4d4d4;
+}
+
+.comment-markdown blockquote {
+  border-left: 3px solid #5e5afe;
+  margin: 6px 0;
+  padding: 4px 12px;
+  color: #aaa;
+  background: rgba(94, 90, 254, 0.06);
+  border-radius: 0 4px 4px 0;
+}
+
+.comment-markdown ul,
+.comment-markdown ol {
+  padding-left: 20px;
+  margin: 4px 0;
+}
+
+.comment-markdown li { margin: 2px 0; }
+
+.comment-markdown a {
+  color: #7b78ff;
+  text-decoration: underline;
+}
+
+.comment-markdown a:hover { color: #aaa9ff; }
+
+.comment-markdown img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 6px 0;
+  display: block;
+}
+
+.comment-markdown table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.comment-markdown th,
+.comment-markdown td {
+  border: 1px solid #2c2d31;
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.comment-markdown th {
+  background: #1e1f24;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.comment-markdown tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
+
+.comment-markdown input[type="checkbox"] {
+  margin-right: 6px;
+  accent-color: #5e5afe;
 }
