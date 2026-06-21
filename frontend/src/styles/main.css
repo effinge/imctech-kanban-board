@@ -1147,3 +1147,56 @@ button {
   border-color: #5e5afe;
   color: #ffffff;
 }
+
+/* Переключатель проектов */
+.project-switcher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #1a1b1e;
+  border: 1px solid #34353a;
+  border-radius: 12px;
+  color: #bdbdbd;
+  font-size: 13px;
+}
+
+.project-switcher select {
+  border: 1px solid #3a3b40;
+  background: #111215;
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  outline: none;
+  font-weight: 600;
+}
+
+.project-role-line {
+  margin: 10px 0 0;
+  color: #b3afff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Состав участников проекта */
+.member-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.member-avatar-mentor {
+  background: #2f8f60;
+}
+
+.lead-badge {
+  flex-shrink: 0;
+  align-self: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(94, 90, 254, 0.18);
+  border: 1px solid rgba(94, 90, 254, 0.5);
+  color: #c5c1ff;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}

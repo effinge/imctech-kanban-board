@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   createTask,
   deleteTask,
-  getMembers,
+  getProjectMembers,
   getProjects,
   getTasks,
   getUsers,
@@ -10,12 +10,13 @@ import {
   updateTask,
   updateTaskStatus,
 } from './api/tasksApi';
-import { accountRoleLabel } from './constants/roles';
+import { accountRoleLabel, SPECIALTY_LABELS } from './constants/roles';
 import CommentsModal from './components/CommentsModal';
 import KanbanBoard from './components/KanbanBoard';
 import LoginScreen from './components/LoginScreen';
 import ProgressBlock from './components/ProgressBlock';
 import ProgressBubble from './components/ProgressBubble';
+import ProjectSwitcher from './components/ProjectSwitcher';
 import TaskModal from './components/TaskModal';
 import TaskDetails from './components/TaskDetails';
 import TeamMembers from './components/TeamMembers';
@@ -32,7 +33,7 @@ import {
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [members, setMembers] = useState([]);
+  const [projectMembers, setProjectMembers] = useState([]);
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
   const [activeProjectId, setActiveProjectId] = useState(null);
@@ -93,10 +94,10 @@ function App() {
     try {
       const [tasksData, membersData] = await Promise.all([
         getTasks(projectId),
-        getMembers(),
+        getProjectMembers(projectId),
       ]);
       setTasks(tasksData);
-      setMembers(membersData);
+      setProjectMembers(membersData);
       setError('');
     } catch (currentError) {
       setError('Не удалось загрузить данные проекта.');
@@ -222,6 +223,27 @@ function App() {
 
   const activeProject = projects.find((project) => project.id === activeProjectId);
 
+  const myMembership =
+    projectMembers.find((member) => member.user_id === currentUser?.id) || null;
+
+  function projectRoleLine() {
+    if (!myMembership) {
+      return 'Вы не участник этого проекта';
+    }
+    if (myMembership.system_role === 'mentor') {
+      return 'Вы — ментор проекта';
+    }
+    const specialty = SPECIALTY_LABELS[myMembership.specialty] || 'без добавочной роли';
+    return myMembership.is_lead
+      ? `Руководитель · ${specialty}`
+      : `Участник · ${specialty}`;
+  }
+
+  // В форме задачи исполнитель выбирается из студентов проекта.
+  const assignableMembers = projectMembers
+    .filter((member) => member.system_role === 'student')
+    .map((member) => ({ id: member.user_id, name: member.name }));
+
   if (!currentUser) {
     return <LoginScreen users={users} onLogin={setCurrentUser} error={error} />;
   }
@@ -258,7 +280,13 @@ function App() {
             <div>
               <ProgressBubble percent={projectProgress.percent} />
               <h1>{activeProject?.name || 'Проект'}</h1>
+              <p className="project-role-line">{projectRoleLine()}</p>
             </div>
+            <ProjectSwitcher
+              projects={projects}
+              activeProjectId={activeProjectId}
+              onChange={setActiveProjectId}
+            />
           </div>
 
           <div className="project-tabs">
@@ -305,7 +333,7 @@ function App() {
 
             <aside className="workspace-sidebar">
               <ProgressBlock progress={projectProgress} />
-              <TeamMembers members={members} />
+              <TeamMembers members={projectMembers} />
             </aside>
           </div>
         </section>
@@ -314,7 +342,7 @@ function App() {
       {isTaskModalOpen && (
         <TaskModal
           task={editingTask}
-          members={members}
+          members={assignableMembers}
           onClose={() => setIsTaskModalOpen(false)}
           onSave={handleSaveTask}
         />
