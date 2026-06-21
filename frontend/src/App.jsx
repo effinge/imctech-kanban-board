@@ -270,6 +270,13 @@ function App() {
   const canManageRoles = isStudent && isLead;
   const canAddParticipant = isMentor || (isStudent && isLead);
 
+  // Руководитель и ментор видят все задачи проекта; обычный участник —
+  // только назначенные ему карточки.
+  const canSeeAllTasks = isMentor || isLead;
+  const visibleTasks = canSeeAllTasks
+    ? tasks
+    : tasks.filter((task) => task.assignee === currentUser?.name);
+
   function projectRoleLine() {
     if (!myMembership) {
       return 'Вы не участник этого проекта';
@@ -384,7 +391,7 @@ function App() {
               {error && <div className="error-message">{error}</div>}
 
               <KanbanBoard
-                tasks={tasks}
+                tasks={visibleTasks}
                 canDrag={canDrag}
                 canManageTasks={canManageTasks}
                 canReview={canReview}
