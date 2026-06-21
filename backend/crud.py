@@ -6,10 +6,15 @@ def row_to_dict(row):
     return dict(row) if row else None
 
 
-def get_tasks():
+def get_tasks(project_id: int | None = None):
     connection = get_connection()
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM tasks ORDER BY id DESC")
+    if project_id is None:
+        cursor.execute("SELECT * FROM tasks ORDER BY id DESC")
+    else:
+        cursor.execute(
+            "SELECT * FROM tasks WHERE project_id = ? ORDER BY id DESC", (project_id,)
+        )
     tasks = [row_to_dict(row) for row in cursor.fetchall()]
     connection.close()
     return tasks
@@ -29,8 +34,8 @@ def create_task(task: TaskCreate):
     cursor = connection.cursor()
     cursor.execute(
         """
-        INSERT INTO tasks (title, description, assignee, deadline, status, priority)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO tasks (title, description, assignee, deadline, status, priority, project_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
         (
             task.title,
@@ -39,6 +44,7 @@ def create_task(task: TaskCreate):
             task.deadline,
             task.status,
             task.priority,
+            task.project_id,
         ),
     )
     connection.commit()
@@ -150,3 +156,135 @@ def create_comment(task_id: int, comment: CommentCreate):
     created = row_to_dict(cursor.fetchone())
     connection.close()
     return created
+
+
+# --- Проекты, пользователи и участие в проектах ---
+
+def get_projects():
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM projects ORDER BY id")
+    projects = [row_to_dict(row) for row in cursor.fetchall()]
+    connection.close()
+    return projects
+
+
+def get_project(project_id: int):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM projects WHERE id = ?", (project_id,))
+    project = row_to_dict(cursor.fetchone())
+    connection.close()
+    return project
+
+
+def get_users():
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        SELECT * FROM users
+        ORDER BY CASE WHEN system_role = 'mentor' THEN 0 ELSE 1 END, name
+        """
+    )
+    users = [row_to_dict(row) for row in cursor.fetchall()]
+    connection.close()
+    return users
+
+
+def get_user(user_id: int):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user = row_to_dict(cursor.fetchone())
+    connection.close()
+    return user
+
+
+def get_project_members(project_id: int):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        SELECT
+            pm.id AS id,
+            pm.project_id AS project_id,
+            pm.user_id AS user_id,
+            pm.is_lead AS is_lead,
+            pm.specialty AS specialty,
+            u.name AS name,
+            u.system_role AS system_role
+        FROM project_members pm
+        JOIN users u ON u.id = pm.user_id
+        WHERE pm.project_id = ?
+        ORDER BY
+            CASE WHEN u.system_role = 'mentor' THEN 0 ELSE 1 END,
+            pm.is_lead DESC,
+            u.name
+        """,
+        (project_id,),
+    )
+    members = [row_to_dict(row) for row in cursor.fetchall()]
+    connection.close()
+    return members
+
+
+def get_membership(project_id: int, user_id: int):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT * FROM project_members WHERE project_id = ? AND user_id = ?",
+        (project_id, user_id),
+    )
+    membership = row_to_dict(cursor.fetchone())
+    connection.close()
+    return membership
+
+
+def add_project_member(project_id: int, user_id: int, specialty: str | None = None):
+    # Добавление участника в проект (ментором или руководителем).
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        INSERT OR IGNORE INTO project_members (project_id, user_id, is_lead, specialty)
+        VALUES (?, ?, 0, ?)
+        """,
+        (project_id, user_id, specialty),
+    )
+    connection.commit()
+    connection.close()
+    return get_project_members(project_id)
+
+
+def set_project_lead(project_id: int, user_id: int):
+    # Ровно один руководитель на проект: снимаем флаг у всех, ставим выбранному.
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        "INSERT OR IGNORE INTO project_members (project_id, user_id, is_lead) VALUES (?, ?, 0)",
+        (project_id, user_id),
+    )
+    cursor.execute(
+        "UPDATE project_members SET is_lead = 0 WHERE project_id = ?", (project_id,)
+    )
+    cursor.execute(
+        "UPDATE project_members SET is_lead = 1 WHERE project_id = ? AND user_id = ?",
+        (project_id, user_id),
+    )
+    connection.commit()
+    connection.close()
+    return get_project_members(project_id)
+
+
+def set_member_specialty(project_id: int, user_id: int, specialty: str):
+    # Назначение добавочной роли участнику (делает руководитель).
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        "UPDATE project_members SET specialty = ? WHERE project_id = ? AND user_id = ?",
+        (specialty, project_id, user_id),
+    )
+    connection.commit()
+    connection.close()
+    return get_project_members(project_id)

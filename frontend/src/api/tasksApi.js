@@ -20,8 +20,9 @@ async function request(path, options = {}) {
   return response.json();
 }
 
-export function getTasks() {
-  return request('/tasks');
+export function getTasks(projectId) {
+  const query = projectId ? `?project_id=${projectId}` : '';
+  return request(`/tasks${query}`);
 }
 
 export function createTask(task) {
@@ -60,6 +61,39 @@ export function deleteTask(id) {
 
 export function getMembers() {
   return request('/members');
+}
+
+export function getProjects() {
+  return request('/projects');
+}
+
+export function getUsers() {
+  return request('/users');
+}
+
+export function getProjectMembers(projectId) {
+  return request(`/projects/${projectId}/members`);
+}
+
+export function assignLead(projectId, userId) {
+  return request(`/projects/${projectId}/lead`, {
+    method: 'PATCH',
+    body: JSON.stringify({ user_id: userId }),
+  });
+}
+
+export function assignSpecialty(projectId, userId, specialty) {
+  return request(`/projects/${projectId}/specialty`, {
+    method: 'PATCH',
+    body: JSON.stringify({ user_id: userId, specialty }),
+  });
+}
+
+export function addProjectMember(projectId, userId) {
+  return request(`/projects/${projectId}/members`, {
+    method: 'POST',
+    body: JSON.stringify({ user_id: userId }),
+  });
 }
 
 export function getComments(taskId) {

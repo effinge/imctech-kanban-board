@@ -13,6 +13,7 @@ class TaskBase(BaseModel):
     deadline: str
     status: TaskStatus
     priority: TaskPriority
+    project_id: int | None = None
 
 
 class TaskCreate(TaskBase):
@@ -42,6 +43,44 @@ class MemberOut(BaseModel):
     id: int
     name: str
     role: str
+
+
+Specialty = Literal["backend", "frontend", "designer", "analyst"]
+
+
+class ProjectOut(BaseModel):
+    id: int
+    name: str
+
+
+class UserOut(BaseModel):
+    id: int
+    name: str
+    system_role: str
+    specialty: str | None = None
+
+
+class ProjectMemberOut(BaseModel):
+    id: int
+    project_id: int
+    user_id: int
+    is_lead: bool
+    specialty: str | None = None
+    name: str
+    system_role: str
+
+
+class AddMember(BaseModel):
+    user_id: int
+
+
+class LeadAssignment(BaseModel):
+    user_id: int
+
+
+class SpecialtyAssignment(BaseModel):
+    user_id: int
+    specialty: Specialty
 
 
 CommentRole = Literal["student", "mentor"]

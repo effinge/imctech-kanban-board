@@ -14,7 +14,8 @@ const PRIORITY_LABELS = {
 
 function TaskDetails({
   task,
-  isMentor,
+  canManageTasks,
+  canReview,
   onClose,
   onEdit,
   onDelete,
@@ -56,7 +57,7 @@ function TaskDetails({
           </div>
         )}
 
-        {isUnderReview && isMentor && (
+        {isUnderReview && canReview && (
           <div className="review-panel">
             <p className="muted-text">Студент отправил задачу на проверку.</p>
             <div className="review-actions">
@@ -70,7 +71,7 @@ function TaskDetails({
           </div>
         )}
 
-        {isUnderReview && !isMentor && (
+        {isUnderReview && !canReview && (
           <div className="review-pending">⏳ Задача ждёт проверки ментора</div>
         )}
 
@@ -80,15 +81,18 @@ function TaskDetails({
           </button>
         </div>
 
-        {!isMentor && (
+        {canManageTasks && (
           <div className="details-actions">
             <button className="secondary-button" onClick={() => onEdit(task)}>Редактировать</button>
             <button className="danger-button" onClick={() => onDelete(task.id)}>Удалить</button>
           </div>
         )}
 
-        {isMentor && (
-          <p className="muted-text">Ментор просматривает задачу без редактирования.</p>
+        {!canManageTasks && (
+          <p className="muted-text">
+            Редактирование задач доступно только руководителю проекта. Вам доступны комментарии
+            {canReview ? ' и проверка задач.' : ' и перемещение карточек.'}
+          </p>
         )}
       </aside>
     </div>

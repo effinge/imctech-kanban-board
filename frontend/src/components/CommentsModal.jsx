@@ -20,13 +20,13 @@ function formatDateTime(value) {
   });
 }
 
-function CommentsModal({ task, role, onClose }) {
+function CommentsModal({ task, role, authorName, onClose }) {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState('');
   const [error, setError] = useState('');
   const [isSending, setIsSending] = useState(false);
   const listEndRef = useRef(null);
-  const authorName = ROLE_NAMES[role];
+  const displayName = authorName || ROLE_NAMES[role];
 
   useEffect(() => {
     let isActive = true;
@@ -63,7 +63,7 @@ function CommentsModal({ task, role, onClose }) {
     try {
       const created = await addComment(task.id, {
         author_role: role,
-        author_name: authorName,
+        author_name: displayName,
         text: trimmed,
       });
       setComments((current) => [...current, created]);
@@ -112,7 +112,7 @@ function CommentsModal({ task, role, onClose }) {
         <form className="comment-form" onSubmit={handleSubmit}>
           <div className="comment-form-meta">
             Вы пишете как:{' '}
-            <span className={`author-chip author-chip-${role}`}>{authorName}</span>
+            <span className={`author-chip author-chip-${role}`}>{displayName}</span>
           </div>
           <textarea
             value={text}

@@ -1,18 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  addProjectMember,
+  assignLead,
+  assignSpecialty,
   createTask,
   deleteTask,
-  getMembers,
+  getProjectMembers,
+  getProjects,
   getTasks,
+  getUsers,
   reviewTask,
   updateTask,
   updateTaskStatus,
 } from './api/tasksApi';
+import { accountRoleLabel, SPECIALTY_LABELS } from './constants/roles';
 import CommentsModal from './components/CommentsModal';
 import KanbanBoard from './components/KanbanBoard';
+import LoginScreen from './components/LoginScreen';
 import ProgressBlock from './components/ProgressBlock';
 import ProgressBubble from './components/ProgressBubble';
-import RoleSwitcher from './components/RoleSwitcher';
+import ProjectSwitcher from './components/ProjectSwitcher';
 import TaskModal from './components/TaskModal';
 import TaskDetails from './components/TaskDetails';
 import TeamMembers from './components/TeamMembers';
@@ -29,23 +36,28 @@ import {
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [members, setMembers] = useState([]);
-  const [role, setRole] = useState('student');
+  const [projectMembers, setProjectMembers] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [activeProjectId, setActiveProjectId] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [commentsTask, setCommentsTask] = useState(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const isMentor = role === 'mentor';
 
-  function openComments(task) {
-    setCommentsTask(task);
-  }
+  const role = currentUser?.system_role || 'student';
+  const isMentor = role === 'mentor';
 
   function showNotice(message) {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 4000);
+  }
+
+  function openComments(task) {
+    setCommentsTask(task);
   }
 
   function applyTaskUpdate(updatedTask) {
@@ -58,18 +70,49 @@ function App() {
   }
 
   useEffect(() => {
-    loadData();
+    loadAccounts();
   }, []);
 
-  async function loadData() {
+  useEffect(() => {
+    if (currentUser && activeProjectId) {
+      loadBoard(activeProjectId);
+    }
+  }, [currentUser, activeProjectId]);
+
+  async function loadAccounts() {
     try {
-      const [tasksData, membersData] = await Promise.all([getTasks(), getMembers()]);
-      setTasks(tasksData);
-      setMembers(membersData);
+      const [usersData, projectsData] = await Promise.all([getUsers(), getProjects()]);
+      setUsers(usersData);
+      setProjects(projectsData);
+      if (projectsData.length > 0) {
+        setActiveProjectId(projectsData[0].id);
+      }
       setError('');
     } catch (currentError) {
       setError('Не удалось загрузить данные. Проверь, запущен ли backend.');
     }
+  }
+
+  async function loadBoard(projectId) {
+    try {
+      const [tasksData, membersData] = await Promise.all([
+        getTasks(projectId),
+        getProjectMembers(projectId),
+      ]);
+      setTasks(tasksData);
+      setProjectMembers(membersData);
+      setError('');
+    } catch (currentError) {
+      setError('Не удалось загрузить данные проекта.');
+    }
+  }
+
+  function handleLogout() {
+    setCurrentUser(null);
+    setSelectedTask(null);
+    setCommentsTask(null);
+    setIsTaskModalOpen(false);
+    setEditingTask(null);
   }
 
   function openCreateModal() {
@@ -91,7 +134,7 @@ function App() {
           currentTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
         );
       } else {
-        const newTask = await createTask(taskData);
+        const newTask = await createTask({ ...taskData, project_id: activeProjectId });
         setTasks((currentTasks) => [newTask, ...currentTasks]);
       }
       setIsTaskModalOpen(false);
@@ -117,7 +160,7 @@ function App() {
   }
 
   async function handleDropTask(taskId, newStatus) {
-    if (isMentor) {
+    if (!canDrag) {
       return;
     }
 
@@ -173,6 +216,36 @@ function App() {
     }
   }
 
+  async function handleAssignLead(userId) {
+    try {
+      const updatedMembers = await assignLead(activeProjectId, userId);
+      setProjectMembers(updatedMembers);
+      showNotice('Назначен руководитель проекта.');
+    } catch (currentError) {
+      setError('Не удалось назначить руководителя.');
+    }
+  }
+
+  async function handleAssignSpecialty(userId, specialty) {
+    try {
+      const updatedMembers = await assignSpecialty(activeProjectId, userId, specialty);
+      setProjectMembers(updatedMembers);
+      showNotice('Добавочная роль обновлена.');
+    } catch (currentError) {
+      setError('Не удалось изменить роль участника.');
+    }
+  }
+
+  async function handleAddParticipant(userId) {
+    try {
+      const updatedMembers = await addProjectMember(activeProjectId, userId);
+      setProjectMembers(updatedMembers);
+      showNotice('Участник добавлен в проект.');
+    } catch (currentError) {
+      setError('Не удалось добавить участника.');
+    }
+  }
+
   const projectProgress = useMemo(() => {
     const total = tasks.length;
     const done = tasks.filter((task) => task.status === 'done').length;
@@ -180,6 +253,71 @@ function App() {
 
     return { total, done, percent };
   }, [tasks]);
+
+  const activeProject = projects.find((project) => project.id === activeProjectId);
+
+  const myMembership =
+    projectMembers.find((member) => member.user_id === currentUser?.id) || null;
+  const isStudent = role === 'student';
+  const isMember = Boolean(myMembership);
+  const isLead = Boolean(myMembership?.is_lead);
+
+  // Права по ролям внутри активного проекта.
+  const canReview = isMentor;
+  const canDrag = isStudent && isMember;
+  const canManageTasks = isStudent && isLead; // создание/редактирование/удаление задач
+  const canAssignLead = isMentor;
+  const canManageRoles = isStudent && isLead;
+  const canAddParticipant = isMentor || (isStudent && isLead);
+
+  // Руководитель и ментор видят все задачи проекта; обычный участник —
+  // только назначенные ему карточки.
+  const canSeeAllTasks = isMentor || isLead;
+  const visibleTasks = canSeeAllTasks
+    ? tasks
+    : tasks.filter((task) => task.assignee === currentUser?.name);
+
+  function projectRoleLine() {
+    if (!myMembership) {
+      return 'Вы не участник этого проекта';
+    }
+    if (myMembership.system_role === 'mentor') {
+      return 'Вы — ментор проекта';
+    }
+    const specialty = SPECIALTY_LABELS[myMembership.specialty] || 'без добавочной роли';
+    return myMembership.is_lead
+      ? `Руководитель · ${specialty}`
+      : `Участник · ${specialty}`;
+  }
+
+  function boardNote() {
+    if (isMentor) {
+      return 'Режим ментора: просмотр доски, проверка задач (подтвердить / вернуть), назначение руководителя и добавление участников.';
+    }
+    if (!isMember) {
+      return 'Вы не участник этого проекта — доступен только просмотр.';
+    }
+    if (isLead) {
+      return 'Вы руководитель проекта: можно создавать и редактировать задачи, назначать добавочные роли и добавлять участников.';
+    }
+    return 'Вы участник проекта: можно перемещать карточки и комментировать. Создание и редактирование задач — у руководителя.';
+  }
+
+  // Исполнитель в форме задачи выбирается из студентов проекта.
+  const assignableMembers = projectMembers
+    .filter((member) => member.system_role === 'student')
+    .map((member) => ({ id: member.user_id, name: member.name }));
+
+  // Кого можно добавить в проект — студенты, которых там ещё нет.
+  const addableUsers = users.filter(
+    (user) =>
+      user.system_role === 'student' &&
+      !projectMembers.some((member) => member.user_id === user.id)
+  );
+
+  if (!currentUser) {
+    return <LoginScreen users={users} onLogin={setCurrentUser} error={error} />;
+  }
 
   return (
     <div className="app-shell">
@@ -198,16 +336,28 @@ function App() {
       <main className="page">
         <header className="topbar">
           <div className="topbar-title">Проекты</div>
-          <div className="topbar-user"><UserIcon size={22} /></div>
+          <div className="topbar-account">
+            <div className="topbar-account-info">
+              <span className="topbar-account-name">{currentUser.name}</span>
+              <span className="topbar-account-role">{accountRoleLabel(currentUser)}</span>
+            </div>
+            <div className="topbar-user"><UserIcon size={22} /></div>
+            <button className="logout-button" onClick={handleLogout}>Выйти</button>
+          </div>
         </header>
 
         <section className="project-layout">
           <div className="project-header">
             <div>
               <ProgressBubble percent={projectProgress.percent} />
-              <h1>Название проекта</h1>
+              <h1>{activeProject?.name || 'Проект'}</h1>
+              <p className="project-role-line">{projectRoleLine()}</p>
             </div>
-            <RoleSwitcher role={role} onRoleChange={setRole} />
+            <ProjectSwitcher
+              projects={projects}
+              activeProjectId={activeProjectId}
+              onChange={setActiveProjectId}
+            />
           </div>
 
           <div className="project-tabs">
@@ -224,25 +374,27 @@ function App() {
                 <button
                   className="primary-button"
                   onClick={openCreateModal}
-                  disabled={isMentor}
-                  title={isMentor ? 'Ментор просматривает проект без редактирования' : ''}
+                  disabled={!canManageTasks}
+                  title={
+                    canManageTasks
+                      ? ''
+                      : 'Создавать задачи может только руководитель проекта'
+                  }
                 >
                   Создать +
                 </button>
               </div>
 
-              {isMentor && (
-                <div className="mentor-note">
-                  Режим ментора: можно просматривать доску, прогресс и участников. Изменение задач ограничено.
-                </div>
-              )}
+              <div className="mentor-note">{boardNote()}</div>
 
               {notice && <div className="notice-message">{notice}</div>}
               {error && <div className="error-message">{error}</div>}
 
               <KanbanBoard
-                tasks={tasks}
-                isMentor={isMentor}
+                tasks={visibleTasks}
+                canDrag={canDrag}
+                canManageTasks={canManageTasks}
+                canReview={canReview}
                 onDropTask={handleDropTask}
                 onOpenTask={setSelectedTask}
                 onEditTask={openEditModal}
@@ -254,7 +406,17 @@ function App() {
 
             <aside className="workspace-sidebar">
               <ProgressBlock progress={projectProgress} />
-              <TeamMembers members={members} />
+              <TeamMembers
+                members={projectMembers}
+                currentUserId={currentUser.id}
+                canAssignLead={canAssignLead}
+                canManageRoles={canManageRoles}
+                canAddParticipant={canAddParticipant}
+                addableUsers={addableUsers}
+                onAssignLead={handleAssignLead}
+                onAssignSpecialty={handleAssignSpecialty}
+                onAddParticipant={handleAddParticipant}
+              />
             </aside>
           </div>
         </section>
@@ -263,7 +425,7 @@ function App() {
       {isTaskModalOpen && (
         <TaskModal
           task={editingTask}
-          members={members}
+          members={assignableMembers}
           onClose={() => setIsTaskModalOpen(false)}
           onSave={handleSaveTask}
         />
@@ -272,7 +434,8 @@ function App() {
       {selectedTask && (
         <TaskDetails
           task={selectedTask}
-          isMentor={isMentor}
+          canManageTasks={canManageTasks}
+          canReview={canReview}
           onClose={() => setSelectedTask(null)}
           onEdit={openEditModal}
           onDelete={handleDeleteTask}
@@ -286,6 +449,7 @@ function App() {
         <CommentsModal
           task={commentsTask}
           role={role}
+          authorName={currentUser.name}
           onClose={() => setCommentsTask(null)}
         />
       )}

@@ -4,14 +4,20 @@ from fastapi.middleware.cors import CORSMiddleware
 import crud
 from database import init_db
 from schemas import (
+    AddMember,
     CommentCreate,
     CommentOut,
+    LeadAssignment,
     MemberOut,
+    ProjectMemberOut,
+    ProjectOut,
     ReviewDecision,
+    SpecialtyAssignment,
     StatusUpdate,
     TaskCreate,
     TaskOut,
     TaskUpdate,
+    UserOut,
 )
 
 app = FastAPI(title="IMCTECH Kanban MVP")
@@ -31,8 +37,8 @@ def on_startup():
 
 
 @app.get("/api/tasks", response_model=list[TaskOut])
-def read_tasks():
-    return crud.get_tasks()
+def read_tasks(project_id: int | None = None):
+    return crud.get_tasks(project_id)
 
 
 @app.post("/api/tasks", response_model=TaskOut)
@@ -90,3 +96,56 @@ def add_comment(task_id: int, comment: CommentCreate):
 @app.get("/api/members", response_model=list[MemberOut])
 def read_members():
     return crud.get_members()
+
+
+@app.get("/api/projects", response_model=list[ProjectOut])
+def read_projects():
+    return crud.get_projects()
+
+
+@app.get("/api/users", response_model=list[UserOut])
+def read_users():
+    return crud.get_users()
+
+
+@app.get("/api/projects/{project_id}/members", response_model=list[ProjectMemberOut])
+def read_project_members(project_id: int):
+    if not crud.get_project(project_id):
+        raise HTTPException(status_code=404, detail="Проект не найден")
+    return crud.get_project_members(project_id)
+
+
+@app.post("/api/projects/{project_id}/members", response_model=list[ProjectMemberOut])
+def add_project_member(project_id: int, payload: AddMember):
+    # Добавить участника в проект (ментор или руководитель).
+    if not crud.get_project(project_id):
+        raise HTTPException(status_code=404, detail="Проект не найден")
+    if not crud.get_user(payload.user_id):
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    return crud.add_project_member(project_id, payload.user_id)
+
+
+@app.patch("/api/projects/{project_id}/lead", response_model=list[ProjectMemberOut])
+def assign_project_lead(project_id: int, payload: LeadAssignment):
+    # Назначение руководителя проекта — действие ментора.
+    if not crud.get_project(project_id):
+        raise HTTPException(status_code=404, detail="Проект не найден")
+    user = crud.get_user(payload.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    if user["system_role"] != "student":
+        raise HTTPException(
+            status_code=422, detail="Руководителем можно назначить только студента"
+        )
+    return crud.set_project_lead(project_id, payload.user_id)
+
+
+@app.patch("/api/projects/{project_id}/specialty", response_model=list[ProjectMemberOut])
+def assign_member_specialty(project_id: int, payload: SpecialtyAssignment):
+    # Назначение добавочной роли участнику — действие руководителя.
+    if not crud.get_project(project_id):
+        raise HTTPException(status_code=404, detail="Проект не найден")
+    membership = crud.get_membership(project_id, payload.user_id)
+    if not membership:
+        raise HTTPException(status_code=404, detail="Участник не найден в проекте")
+    return crud.set_member_specialty(project_id, payload.user_id, payload.specialty)
