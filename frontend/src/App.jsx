@@ -318,6 +318,26 @@ function App() {
   const visibleTasks = canSeeAllTasks
     ? tasks
     : tasks.filter((task) => task.assignee === currentUser?.name);
+  const sortedVisibleTasks = useMemo(() => {
+    const tasksCopy = [...visibleTasks];
+
+    if (sortOption === 'priority') {
+      tasksCopy.sort((taskA, taskB) => {
+        const weightA = PRIORITY_WEIGHT[taskA.priority] ?? 99;
+        const weightB = PRIORITY_WEIGHT[taskB.priority] ?? 99;
+        return weightA - weightB;
+      });
+    } else if (sortOption === 'deadline') {
+      tasksCopy.sort((taskA, taskB) => {
+        if (!taskA.deadline && !taskB.deadline) return 0;
+        if (!taskA.deadline) return 1;
+        if (!taskB.deadline) return -1;
+        return new Date(taskA.deadline) - new Date(taskB.deadline);
+      });
+    }
+
+    return tasksCopy;
+  }, [visibleTasks, sortOption]);
 
   function projectRoleLine() {
     if (!myMembership) {
@@ -447,6 +467,16 @@ function App() {
                 >
                   Создать +
                 </button>
+                <select
+                  className="sort-select"
+                  value={sortOption}
+                  onChange={(event) => setSortOption(event.target.value)}
+                  aria-label="Сортировка задач"
+                >
+                  <option value="default">По умолчанию</option>
+                  <option value="priority">По приоритету</option>
+                  <option value="deadline">По дедлайну</option>
+                </select>
               </div>
 
               <div className="mentor-note">{boardNote()}</div>
@@ -455,7 +485,7 @@ function App() {
               {error && <div className="error-message">{error}</div>}
 
               <KanbanBoard
-                tasks={visibleTasks}
+                tasks={sortedVisibleTasks}
                 canDrag={canDrag}
                 canManageTasks={canManageTasks}
                 canReview={canReview}

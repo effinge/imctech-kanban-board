@@ -1255,3 +1255,29 @@ button {
 .add-member .secondary-button {
   white-space: nowrap;
 }
+
+.sort-select {
+  min-height: 42px;
+  padding: 12px 14px;
+  border: 1px solid #3a3b40;
+  border-radius: 4px;
+  color: #eeeeee;
+  background: #101113;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  flex: 0 0 200px;
+}
+
+.sort-select:hover {
+  border-color: #585b65;
+}
+
+.sort-select:focus {
+  border-color: #5e5afe;
+}
+
+.sort-select option {
+  background: #101113;
+  color: #eeeeee;
+}
