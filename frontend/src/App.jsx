@@ -434,7 +434,7 @@ function App() {
             <button className="tab active">Статусы →</button>
             <button className="tab">↑ Приоритеты</button>
             <button className="tab">★ Категории</button>
-            <button className="tab">▣ Дедлайны</button>
+            <button className="tab">⏱︎ Дедлайны</button>
           </div>
 
           <div className="workspace-grid">
