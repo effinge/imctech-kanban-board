@@ -89,7 +89,7 @@ CommentRole = Literal["student", "mentor"]
 class CommentCreate(BaseModel):
     author_role: CommentRole
     author_name: str = Field(min_length=1, max_length=120)
-    text: str = Field(min_length=1, max_length=1000)
+    text: str = Field(min_length=1, max_length=500_000)
 
 
 class CommentOut(BaseModel):
