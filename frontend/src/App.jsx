@@ -53,7 +53,6 @@ function App() {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
 
   const [titleOverrides, setTitleOverrides] = useState({});
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
   const [sortOption, setSortOption] = useState('default');
 
@@ -85,12 +84,14 @@ function App() {
   useEffect(() => {
     if (currentUser && activeProjectId) {
       loadBoard(activeProjectId);
-      setIsEditingTitle(false);
       const savedTitle = localStorage.getItem(
         `${PROJECT_TITLE_STORAGE_PREFIX}${activeProjectId}`
       );
       if (savedTitle) {
         setTitleOverrides((current) => ({ ...current, [activeProjectId]: savedTitle }));
+        setTitleDraft(savedTitle);
+      } else {
+        setTitleDraft(activeProject?.name ?? 'Проект');
       }
     }
   }, [currentUser, activeProjectId]);
@@ -131,30 +132,22 @@ function App() {
     setEditingTask(null);
   }
 
-  function startEditingTitle() {
-    if (!canEditProjectTitle) {
-      return;
-    }
-    setTitleDraft(displayedProjectTitle);
-    setIsEditingTitle(true);
-  }
-
   function commitTitleChange() {
     const trimmedTitle = titleDraft.trim();
     const finalTitle = trimmedTitle === '' ? activeProject?.name || 'Проект' : trimmedTitle;
 
+    setTitleDraft(finalTitle);
     setTitleOverrides((current) => ({ ...current, [activeProjectId]: finalTitle }));
     localStorage.setItem(`${PROJECT_TITLE_STORAGE_PREFIX}${activeProjectId}`, finalTitle);
-    setIsEditingTitle(false);
   }
 
   function handleTitleKeyDown(event) {
     if (event.key === 'Enter') {
       event.preventDefault();
-      commitTitleChange();
+      event.target.blur();
     } else if (event.key === 'Escape') {
       setTitleDraft(displayedProjectTitle);
-      setIsEditingTitle(false);
+      event.target.blur();
     }
   }
 
@@ -429,26 +422,20 @@ function App() {
         <section className="project-layout">
           <div className="project-header">
             <div>
-              {isEditingTitle ? (
-                <input
-                  type="text"
-                  className="project-title-input"
-                  value={titleDraft}
-                  autoFocus
-                  onChange={(event) => setTitleDraft(event.target.value)}
-                  onBlur={commitTitleChange}
-                  onKeyDown={handleTitleKeyDown}
-                  maxLength={120}
-                />
+              {canEditProjectTitle ? (
+                <div className="project-title-wrapper" data-value={titleDraft}>
+                  <input
+                    type="text"
+                    className="project-title-input"
+                    value={titleDraft}
+                    onChange={(event) => setTitleDraft(event.target.value)}
+                    onBlur={commitTitleChange}
+                    onKeyDown={handleTitleKeyDown}
+                    maxLength={120}
+                  />
+                </div>
               ) : (
-                <h1
-                  className={`project-title ${canEditProjectTitle ? 'project-title-editable' : ''}`}
-                  onClick={startEditingTitle}
-                  title={canEditProjectTitle ? 'Нажмите, чтобы переименовать проект' : ''}
-                >
-                  {displayedProjectTitle}
-                  {canEditProjectTitle && <span className="project-title-edit-icon">✎</span>}
-                </h1>
+                <h1 className="project-title">{displayedProjectTitle}</h1>
               )}
 
               <p className="project-role-line">{projectRoleLine()}</p>

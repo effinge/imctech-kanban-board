@@ -123,6 +123,51 @@ button {
   font-weight: 800;
 }
 
+.project-title-wrapper {
+  display: inline-grid;
+  margin: 7px 0 0;
+  min-width: 4ch;
+  max-width: 100%;
+}
+
+.project-title-wrapper::after {
+  content: attr(data-value);
+  grid-area: 1 / 1;
+  visibility: hidden;
+  pointer-events: none;
+  font-size: 36px;
+  line-height: 1.12;
+  font-weight: 800;
+  font-family: inherit;
+  padding: 0;
+  white-space: pre;
+}
+
+.project-title-input {
+  grid-area: 1 / 1;
+  min-width: 0;
+  font-size: 36px;
+  line-height: 1.12;
+  font-weight: 800;
+  font-family: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  outline: none;
+  padding: 0;
+  transition: border-color 0.15s;
+}
+
+.project-title-input:hover {
+  border-bottom-color: #3a3b40;
+  cursor: text;
+}
+
+.project-title-input:focus {
+  border-bottom-color: #5e5afe;
+}
+
 .role-switcher {
   display: flex;
   align-items: center;
