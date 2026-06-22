@@ -4,6 +4,13 @@ const PRIORITY_LABELS = {
   high: 'высокий',
 };
 
+const SPECIALTY_TAG_LABELS = {
+  backend: 'Backend',
+  frontend: 'Frontend',
+  designer: 'Дизайн',
+  analyst: 'Аналитика',
+};
+
 function isTaskOverdue(task) {
   if (task.status === 'done') {
     return false;
@@ -31,6 +38,7 @@ function TaskCard({
   canDrag,
   canManageTasks,
   canReview,
+  assigneeSpecialtyMap,
   onOpenTask,
   onEditTask,
   onDeleteTask,
@@ -64,7 +72,9 @@ function TaskCard({
 
       <div className="badges">
         <span className={`priority priority-${task.priority}`}>{PRIORITY_LABELS[task.priority]}</span>
-        <span className="tag">учебный проект</span>
+        {assigneeSpecialtyMap?.[task.assignee] && (
+          <span className="tag">{SPECIALTY_TAG_LABELS[assigneeSpecialtyMap[task.assignee]] ?? 'проект'}</span>
+        )}
       </div>
 
       <div className="task-meta">

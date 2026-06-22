@@ -192,9 +192,18 @@ button {
   padding: 12px 16px;
   border: 1px solid #3a3b40;
   border-radius: 4px;
-  color: #85868a;
+  color: #d6d6d8;
   background: #101113;
   font-size: 14px;
+  outline: none;
+}
+
+.search-field::placeholder {
+  color: #55565b;
+}
+
+.search-field:focus {
+  border-color: #5e5afe;
 }
 
 .primary-button,

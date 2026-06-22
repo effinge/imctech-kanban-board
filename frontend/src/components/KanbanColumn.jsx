@@ -6,6 +6,7 @@ function KanbanColumn({
   canDrag,
   canManageTasks,
   canReview,
+  assigneeSpecialtyMap,
   onDropTask,
   onOpenTask,
   onEditTask,
@@ -47,6 +48,7 @@ function KanbanColumn({
             canDrag={canDrag}
             canManageTasks={canManageTasks}
             canReview={canReview}
+            assigneeSpecialtyMap={assigneeSpecialtyMap}
             onOpenTask={onOpenTask}
             onEditTask={onEditTask}
             onDeleteTask={onDeleteTask}

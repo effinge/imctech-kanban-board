@@ -13,6 +13,7 @@ function KanbanBoard({
   canDrag,
   canManageTasks,
   canReview,
+  assigneeSpecialtyMap,
   onDropTask,
   onOpenTask,
   onEditTask,
@@ -33,6 +34,7 @@ function KanbanBoard({
             canDrag={canDrag}
             canManageTasks={canManageTasks}
             canReview={canReview}
+            assigneeSpecialtyMap={assigneeSpecialtyMap}
             onDropTask={onDropTask}
             onOpenTask={onOpenTask}
             onEditTask={onEditTask}

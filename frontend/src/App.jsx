@@ -56,6 +56,8 @@ function App() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
   const [sortOption, setSortOption] = useState('default');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterAssignee, setFilterAssignee] = useState('');
 
   const role = currentUser?.system_role || 'student';
   const isMentor = role === 'mentor';
@@ -332,9 +334,25 @@ function App() {
   const visibleTasks = canSeeAllTasks
     ? tasks
     : tasks.filter((task) => task.assignee === currentUser?.name);
-  
+
+  const filteredTasks = useMemo(() => {
+    let list = visibleTasks;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          (t.description || '').toLowerCase().includes(q)
+      );
+    }
+    if (filterAssignee) {
+      list = list.filter((t) => t.assignee === filterAssignee);
+    }
+    return list;
+  }, [visibleTasks, searchQuery, filterAssignee]);
+
   const sortedTasks = useMemo(() => {
-    const list = [...visibleTasks];
+    const list = [...filteredTasks];
     if (sortOption === 'priority') {
       list.sort((a, b) => (PRIORITY_WEIGHT[a.priority] ?? 99) - (PRIORITY_WEIGHT[b.priority] ?? 99));
     } else if (sortOption === 'deadline') {
@@ -347,7 +365,15 @@ function App() {
       list.sort((a, b) => b.id - a.id);
     }
     return list;
-  }, [visibleTasks, sortOption]);
+  }, [filteredTasks, sortOption]);
+
+  const assigneeSpecialtyMap = useMemo(() => {
+    const map = {};
+    projectMembers.forEach((m) => {
+      map[m.name] = m.specialty || null;
+    });
+    return map;
+  }, [projectMembers]);
 
   const sidebarProgress = canSeeAllTasks ? projectProgress : personalProgress;
   const sidebarProgressTitle = canSeeAllTasks ? 'Прогресс проекта' : 'Мой прогресс';
@@ -464,7 +490,24 @@ function App() {
           <div className="workspace-grid">
             <section className="workspace-main">
               <div className="toolbar">
-                <div className="search-field">⌕ Поиск по задачам</div>
+                <input
+                  className="search-field"
+                  type="text"
+                  placeholder="⌕ Поиск по задачам"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <select
+                  className="sort-select"
+                  value={filterAssignee}
+                  onChange={(e) => setFilterAssignee(e.target.value)}
+                  aria-label="Фильтр по исполнителю"
+                >
+                  <option value="">Все исполнители</option>
+                  {assignableMembers.map((m) => (
+                    <option key={m.id} value={m.name}>{m.name}</option>
+                  ))}
+                </select>
                 <select className="sort-select" value={sortOption}
                         onChange={(e) => setSortOption(e.target.value)} aria-label="Сортировка задач">
                   <option value="default">Сортировка: по умолчанию</option>
@@ -503,6 +546,7 @@ function App() {
                 canDrag={canDrag}
                 canManageTasks={canManageTasks}
                 canReview={canReview}
+                assigneeSpecialtyMap={assigneeSpecialtyMap}
                 onDropTask={handleDropTask}
                 onOpenTask={setSelectedTask}
                 onEditTask={openEditModal}
