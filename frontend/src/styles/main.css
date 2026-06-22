@@ -8,6 +8,11 @@ body {
   background: #0a0b0d;
   color: #eeeeee;
   font-family: Inter, Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 button,
@@ -155,9 +160,9 @@ button {
 .project-header h1 {
   margin: 7px 0 0;
   font-size: 36px;
-  line-height: 1;
+  line-height: 1.12;
   font-weight: 800;
-  letter-spacing: 0.4px;
+  letter-spacing: -0.6px;
 }
 
 .role-switcher {
@@ -403,14 +408,14 @@ button {
 .task-card h3 {
   margin: 0;
   font-size: 15px;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 .task-card p {
   margin: 0 0 10px;
   color: #b7b7ba;
   font-size: 12px;
-  line-height: 1.45;
+  line-height: 1.55;
 }
 
 .badges,
@@ -643,7 +648,7 @@ button {
 .muted-text {
   color: #a6a6aa;
   font-size: 13px;
-  line-height: 1.45;
+  line-height: 1.55;
 }
 
 .members-list {
@@ -714,6 +719,8 @@ button {
 .modal-header h2 {
   margin: 0;
   font-size: 22px;
+  line-height: 1.25;
+  letter-spacing: -0.3px;
 }
 
 .close-button {
@@ -804,7 +811,8 @@ button {
 .task-details h2 {
   margin: 0 0 8px;
   font-size: 28px;
-  line-height: 1.15;
+  line-height: 1.22;
+  letter-spacing: -0.4px;
 }
 
 .details-meta {
@@ -1025,7 +1033,9 @@ button {
 .login-head h1 {
   margin: 16px 0 6px;
   font-size: 26px;
+  line-height: 1.2;
   font-weight: 800;
+  letter-spacing: -0.4px;
 }
 
 .login-head p {
@@ -1080,8 +1090,9 @@ button {
 .account-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
+  line-height: 1.35;
 }
 
 .account-name {
@@ -1118,7 +1129,8 @@ button {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  line-height: 1.2;
+  gap: 2px;
+  line-height: 1.35;
 }
 
 .topbar-account-name {
@@ -1486,7 +1498,8 @@ button {
 .dash-stat-value {
   font-size: 26px;
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.05;
+  letter-spacing: -0.5px;
   margin-bottom: 6px;
   color: #e0e0e0;
 }
@@ -1638,14 +1651,22 @@ button {
 }
 
 .dash-member-header {
+  align-items: end;
   font-size: 10px;
   font-weight: 700;
   color: #555560;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   border-bottom: 1px solid #2c2d31;
-  padding-bottom: 8px;
+  padding-bottom: 10px;
   margin-bottom: 2px;
+}
+
+.dash-member-header .dash-cell-center {
+  flex-direction: column;
+  gap: 5px;
+  line-height: 1.3;
+  text-align: center;
 }
 
 .dash-member-row {
