@@ -333,6 +333,27 @@ function App() {
     ? tasks
     : tasks.filter((task) => task.assignee === currentUser?.name);
 
+  let sortedTasks = [...visibleTasks];
+  if (sortOption === 'deadline_asc') {
+    sortedTasks.sort((a, b) => {
+      if (!a.deadline && !b.deadline) return 0;
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline) - new Date(b.deadline);
+    });
+  } else if (sortOption === 'deadline_desc') {
+    sortedTasks.sort((a, b) => {
+      if (!a.deadline && !b.deadline) return 0;
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(b.deadline) - new Date(a.deadline);
+    });
+  } else if (sortOption === 'priority_asc') {
+    sortedTasks.sort((a, b) => (PRIORITY_WEIGHT[a.priority] ?? 1) - (PRIORITY_WEIGHT[b.priority] ?? 1));
+  } else if (sortOption === 'priority_desc') {
+    sortedTasks.sort((a, b) => (PRIORITY_WEIGHT[b.priority] ?? 1) - (PRIORITY_WEIGHT[a.priority] ?? 1));
+  }
+
   const sidebarProgress = canSeeAllTasks ? projectProgress : personalProgress;
   const sidebarProgressTitle = canSeeAllTasks ? 'Прогресс проекта' : 'Мой прогресс';
 
@@ -448,7 +469,17 @@ function App() {
           <div className="workspace-grid">
             <section className="workspace-main">
               <div className="toolbar">
-                <div className="search-field">⌕ Поиск по задачам</div>
+                <select
+                  className="sort-select"
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value)}
+                >
+                  <option value="default">Сортировка: по умолчанию</option>
+                  <option value="deadline_asc">Дедлайн: ближе →</option>
+                  <option value="deadline_desc">Дедлайн: позже →</option>
+                  <option value="priority_asc">Приоритет: высокий → низкий</option>
+                  <option value="priority_desc">Приоритет: низкий → высокий</option>
+                </select>
                 {(isMentor || isLead) && (
                   <button
                     className="secondary-button"
@@ -477,7 +508,7 @@ function App() {
               {error && <div className="error-message">{error}</div>}
 
               <KanbanBoard
-                tasks={visibleTasks}
+                tasks={sortedTasks}
                 canDrag={canDrag}
                 canManageTasks={canManageTasks}
                 canReview={canReview}
