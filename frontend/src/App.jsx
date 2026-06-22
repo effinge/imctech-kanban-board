@@ -78,6 +78,10 @@ function App() {
   }
 
   useEffect(() => {
+    loadAccounts();
+  }, []);
+
+  useEffect(() => {
     if (currentUser && activeProjectId) {
       loadBoard(activeProjectId);
       setIsEditingTitle(false);

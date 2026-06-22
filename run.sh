@@ -25,10 +25,23 @@ if [ ! -x "$VENV_PYTHON" ] \
 fi
 
 # --- Frontend: зависимости ---
-if [ ! -d "$FRONTEND_DIR/node_modules" ]; then
+if [ ! -d "$FRONTEND_DIR/node_modules" ] \
+   || [ "$FRONTEND_DIR/package.json" -nt "$FRONTEND_DIR/node_modules/.package-lock.json" ]; then
   echo "→ Устанавливаю npm-зависимости…"
   (cd "$FRONTEND_DIR" && npm install)
 fi
+
+# --- Освобождаем порты от зависших процессов прошлого запуска ---
+for port in "$BACKEND_PORT" "$FRONTEND_PORT"; do
+  pids="$(lsof -tiTCP:"$port" -sTCP:LISTEN 2>/dev/null || true)"
+  if [ -n "$pids" ]; then
+    echo "→ Освобождаю порт $port (зависшие процессы: $pids)…"
+    kill $pids 2>/dev/null || true
+    sleep 1
+    pids="$(lsof -tiTCP:"$port" -sTCP:LISTEN 2>/dev/null || true)"
+    [ -n "$pids" ] && kill -9 $pids 2>/dev/null || true
+  fi
+done
 
 # Останавливаем оба процесса при выходе (Ctrl+C).
 cleanup() {
