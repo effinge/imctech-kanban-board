@@ -350,6 +350,64 @@ button {
   background: #0f2118;
 }
 
+/* Раздел «Приоритеты» */
+.column-low {
+  background: #16201a;
+}
+
+.column-medium {
+  background: #25220f;
+}
+
+.column-high {
+  background: #221314;
+}
+
+.column-low .status-dot {
+  background: #5e9e4a;
+}
+
+.column-medium .status-dot {
+  background: #cfa425;
+}
+
+.column-high .status-dot {
+  background: #d65757;
+}
+
+/* Раздел «Дедлайны» */
+.column-week {
+  background: #221314;
+}
+
+.column-next_week {
+  background: #25220f;
+}
+
+.column-two_weeks {
+  background: #18212e;
+}
+
+.column-month {
+  background: #17181b;
+}
+
+.column-week .status-dot {
+  background: #d65757;
+}
+
+.column-next_week .status-dot {
+  background: #cfa425;
+}
+
+.column-two_weeks .status-dot {
+  background: #4f9dff;
+}
+
+.column-month .status-dot {
+  background: #a3a3a3;
+}
+
 .column-header {
   display: flex;
   align-items: center;

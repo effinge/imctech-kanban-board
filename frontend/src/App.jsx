@@ -55,6 +55,7 @@ function App() {
   const [titleOverrides, setTitleOverrides] = useState({});
   const [titleDraft, setTitleDraft] = useState('');
   const [sortOption, setSortOption] = useState('default');
+  const [activeSection, setActiveSection] = useState('status');
 
   const role = currentUser?.system_role || 'student';
   const isMentor = role === 'mentor';
@@ -448,9 +449,24 @@ function App() {
           </div>
 
           <div className="project-tabs">
-            <button className="tab active">Статусы →</button>
-            <button className="tab">↑ Приоритеты</button>
-            <button className="tab">⏱︎ Дедлайны</button>
+            <button
+              className={`tab${activeSection === 'status' ? ' active' : ''}`}
+              onClick={() => setActiveSection('status')}
+            >
+              Статусы →
+            </button>
+            <button
+              className={`tab${activeSection === 'priority' ? ' active' : ''}`}
+              onClick={() => setActiveSection('priority')}
+            >
+              ↑ Приоритеты
+            </button>
+            <button
+              className={`tab${activeSection === 'deadline' ? ' active' : ''}`}
+              onClick={() => setActiveSection('deadline')}
+            >
+              ⏱︎ Дедлайны
+            </button>
           </div>
 
           <div className="workspace-grid">
@@ -495,6 +511,7 @@ function App() {
               {error && <div className="error-message">{error}</div>}
 
               <KanbanBoard
+                section={activeSection}
                 tasks={sortedTasks}
                 canDrag={canDrag}
                 canManageTasks={canManageTasks}
