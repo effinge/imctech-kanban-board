@@ -1,42 +1,46 @@
 # IMCTECH Kanban Board
 
-Role-based kanban board for managing team projects with mentor oversight. Built as an MVP for educational teams.
+Канбан-доска для управления командными проектами с ролевой системой доступа и контролем со стороны наставника. Разработана как MVP для учебных команд.
 
-![Preview](https://raw.githubusercontent.com/myfreeqn/imctech-kanban-board/main/preview.png)
+## О проекте
 
-## Features
+IMCTECH Kanban Board — это инструмент для организации работы над проектами внутри небольших команд. Система построена на трёх ролях: наставник контролирует и утверждает задачи, руководитель проекта управляет ими, а участники работают над своими задачами и комментируют их. Вся логика доступа применяется как в интерфейсе, так и на уровне бэкенда.
 
-- **No-auth demo login** — select from pre-seeded accounts to explore different roles
-- **Role-based access** — Mentor, Project Lead, and Member each see different controls
-- **Drag-and-drop kanban** — move tasks through statuses; dragging to Done sends to mentor for approval
-- **Three board views** — group by Status, Priority, or Deadline
-- **Markdown comments** — task comments support GitHub-flavored markdown with image uploads
-- **Dashboard** — project analytics: completion %, member stats, overdue count (mentor/lead only)
-- **Multi-project** — switch between projects from the sidebar
+## Возможности
 
-## Roles
+- **Вход без регистрации** — выбери демо-аккаунт на экране входа и сразу попадёшь в проект
+- **Три роли доступа** — у каждой роли свой набор действий и своё представление данных
+- **Перетаскивание задач** — меняй статусы задач drag-and-drop; перемещение в «Выполнено» отправляет задачу на проверку наставнику
+- **Три режима отображения доски** — сгруппировать задачи по статусу, приоритету или дедлайну
+- **Markdown-комментарии** — комментарии поддерживают жирный текст, курсив, код, цитаты, ссылки и загрузку изображений (GitHub-flavored markdown)
+- **Дашборд** — аналитика по проекту: процент выполнения, статистика по участникам, количество просроченных задач (доступно наставнику и руководителю)
+- **Несколько проектов** — переключайся между проектами через боковую панель
 
-| Role | Can do |
-|------|--------|
-| Mentor | Review/approve tasks, assign project lead, add members |
-| Project Lead | Create/edit/delete tasks, assign member specialties |
-| Member | Drag-reorder tasks, comment, view own tasks |
+## Роли
 
-## Tech Stack
+| Роль | Возможности |
+|------|-------------|
+| Наставник | Проверяет и утверждает задачи, назначает руководителя проекта, добавляет участников |
+| Руководитель проекта | Создаёт, редактирует и удаляет задачи, назначает специальности участникам |
+| Участник | Перетаскивает и переупорядочивает задачи, оставляет комментарии, видит только свои задачи |
 
-**Frontend:** React + Vite, React Markdown, Remark-GFM
+## Технологии
 
-**Backend:** FastAPI, Uvicorn, Pydantic v2, SQLite3
+**Фронтенд:** React, Vite, React Markdown, Remark-GFM
 
-## Getting Started
+**Бэкенд:** FastAPI, Uvicorn, Pydantic v2, SQLite3
 
-### Requirements
+Для хранения данных используется SQLite — внешняя база данных не требуется. БД автоматически создаётся и наполняется тестовыми данными при первом запуске.
+
+## Быстрый старт
+
+### Требования
 
 - Python 3.8+
 - Node.js 16+
-- Bash (on Windows: WSL or Git Bash)
+- Bash (на Windows: WSL или Git Bash)
 
-### Quick Start (recommended)
+### Запуск одной командой (рекомендуется)
 
 ```bash
 git clone https://github.com/myfreeqn/imctech-kanban-board.git
@@ -44,59 +48,59 @@ cd imctech-kanban-board
 ./run.sh
 ```
 
-The script handles everything: creates the Python venv, installs all dependencies, and starts both servers.
+Скрипт `run.sh` делает всё автоматически: создаёт Python-окружение, устанавливает зависимости и запускает оба сервера.
 
-- Frontend: http://localhost:5173
-- Backend API docs: http://localhost:8000/docs
+- Фронтенд: http://localhost:5173
+- Документация API (Swagger): http://localhost:8000/docs
 
-### Manual Start
+### Ручной запуск
 
 ```bash
-# Backend
+# Бэкенд
 cd backend
 python3 -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python -m uvicorn main:app --reload --port 8000
 
-# Frontend (new terminal)
+# Фронтенд (в новом терминале)
 cd frontend
 npm install
 npm run dev
 ```
 
-## Demo Accounts
+## Демо-аккаунты
 
-The database auto-seeds on first launch with 5 accounts:
+При первом запуске база данных автоматически заполняется 5 аккаунтами и тремя учебными проектами с задачами. Пароль не нужен — просто выбери имя на экране входа.
 
-| Account | Role | Notes |
-|---------|------|-------|
-| Mentor | Mentor | Full access, approves tasks |
-| Student 1–4 | Student | Assigned to different demo projects |
+| Аккаунт | Роль | Описание |
+|---------|------|----------|
+| Наставник | Наставник | Полный доступ, утверждает задачи |
+| Студент 1–4 | Студент | Участники демо-проектов с разными специальностями |
 
-No passwords — just click a name on the login screen.
+## Режимы отображения доски
 
-## Project Structure
+| Режим | Столбцы | Перетаскивание |
+|-------|---------|----------------|
+| Статусы | Бэклог → Нужно сделать → В процессе → На проверке → Выполнено | Да |
+| Приоритеты | Низкий / Средний / Высокий | Нет (визуальная группировка) |
+| Дедлайны | На этой неделе / Через неделю / Через две недели / В течении месяца | Нет (просроченные скрываются) |
+
+Режим «Статусы» — основной рабочий режим с drag-and-drop. Приоритеты и дедлайны — вспомогательные виды только для чтения, одни и те же карточки перегруппировываются без изменения данных.
+
+## Структура проекта
 
 ```
 imctech-kanban-board/
 ├── frontend/
 │   └── src/
-│       ├── components/   # React components (KanbanBoard, TaskCard, etc.)
-│       ├── api/          # Backend API client
-│       └── constants/    # Role definitions
+│       ├── components/        # React-компоненты (KanbanBoard, TaskCard, CommentsModal и др.)
+│       ├── api/               # Клиент для работы с бэкендом
+│       └── constants/         # Константы ролей
 ├── backend/
-│   ├── main.py           # FastAPI routes (24 endpoints)
-│   ├── database.py       # SQLite schema + seed data
-│   ├── crud.py           # Data access layer
-│   └── schemas.py        # Pydantic models
-└── run.sh                # One-command startup script
+│   ├── main.py                # FastAPI-роутер (24 эндпоинта)
+│   ├── database.py            # Схема SQLite и начальное заполнение данными
+│   ├── crud.py                # Слой доступа к данным
+│   └── schemas.py             # Pydantic-модели
+└── run.sh                     # Скрипт для запуска одной командой
 ```
-
-## Board Views
-
-| View | Columns | Drag-and-drop |
-|------|---------|---------------|
-| Статусы | Бэклог → Нужно сделать → В процессе → На проверке → Выполнено | Yes |
-| Приоритеты | Низкий / Средний / Высокий | No (read-only grouping) |
-| Дедлайны | На этой неделе / Через неделю / Через две недели / В течении месяца | No (overdue tasks hidden) |
