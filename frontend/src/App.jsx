@@ -15,6 +15,7 @@ import {
 } from './api/tasksApi';
 import { accountRoleLabel, SPECIALTY_LABELS } from './constants/roles';
 import CommentsModal from './components/CommentsModal';
+import DashboardModal from './components/DashboardModal';
 import KanbanBoard from './components/KanbanBoard';
 import LoginScreen from './components/LoginScreen';
 import ProgressBlock from './components/ProgressBlock';
@@ -50,6 +51,7 @@ function App() {
   const [commentsTask, setCommentsTask] = useState(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
 
   const [titleOverrides, setTitleOverrides] = useState({});
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -439,6 +441,14 @@ function App() {
             <section className="workspace-main">
               <div className="toolbar">
                 <div className="search-field">⌕ Поиск по задачам</div>
+                {(isMentor || isLead) && (
+                  <button
+                    className="secondary-button"
+                    onClick={() => setIsDashboardOpen(true)}
+                  >
+                    Дашборд
+                  </button>
+                )}
                 <button
                   className="primary-button"
                   onClick={openCreateModal}
@@ -519,6 +529,15 @@ function App() {
           role={role}
           authorName={currentUser.name}
           onClose={() => setCommentsTask(null)}
+        />
+      )}
+
+      {isDashboardOpen && (
+        <DashboardModal
+          tasks={tasks}
+          members={projectMembers}
+          projectTitle={displayedProjectTitle}
+          onClose={() => setIsDashboardOpen(false)}
         />
       )}
     </div>
