@@ -350,8 +350,6 @@ function App() {
   }, [visibleTasks, sortOption]);
 
   const sidebarProgress = canSeeAllTasks ? projectProgress : personalProgress;
-
-  const sidebarProgress = canSeeAllTasks ? projectProgress : personalProgress;
   const sidebarProgressTitle = canSeeAllTasks ? 'Прогресс проекта' : 'Мой прогресс';
 
   function projectRoleLine() {
@@ -458,9 +456,9 @@ function App() {
           </div>
 
           <div className="project-tabs">
-            <button className="tab active">Статусы →</button>
-            <button className="tab">↑ Приоритеты</button>
-            <button className="tab">⏱︎ Дедлайны</button>
+            <button className={`tab ${sortOption === 'default' ? 'active' : ''}`} onClick={() => setSortOption('default')}>Статусы →</button>
+            <button className={`tab ${sortOption === 'priority' ? 'active' : ''}`} onClick={() => setSortOption('priority')}>↑ Приоритеты</button>
+            <button className={`tab ${sortOption === 'deadline' ? 'active' : ''}`} onClick={() => setSortOption('deadline')}>⏱︎ Дедлайны</button>
           </div>
 
           <div className="workspace-grid">
