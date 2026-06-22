@@ -1,8 +1,8 @@
-function ProgressBlock({ progress }) {
+function ProgressBlock({ progress, title = 'Прогресс проекта' }) {
   return (
     <div className="info-card">
       <div className="info-card-header">
-        <h3>Прогресс проекта</h3>
+        <h3>{title}</h3>
         <span>{progress.percent}%</span>
       </div>
 

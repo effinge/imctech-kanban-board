@@ -19,7 +19,6 @@ import DashboardModal from './components/DashboardModal';
 import KanbanBoard from './components/KanbanBoard';
 import LoginScreen from './components/LoginScreen';
 import ProgressBlock from './components/ProgressBlock';
-import ProgressBubble from './components/ProgressBubble';
 import ProjectSwitcher from './components/ProjectSwitcher';
 import TaskModal from './components/TaskModal';
 import TaskDetails from './components/TaskDetails';
@@ -298,6 +297,15 @@ function App() {
     return { total, done, percent };
   }, [tasks]);
 
+  const personalProgress = useMemo(() => {
+    const mine = tasks.filter((task) => task.assignee === currentUser?.name);
+    const total = mine.length;
+    const done = mine.filter((task) => task.status === 'done').length;
+    const percent = total === 0 ? 0 : Math.round((done / total) * 100);
+
+    return { total, done, percent };
+  }, [tasks, currentUser]);
+
   const activeProject = projects.find((project) => project.id === activeProjectId);
 
   const displayedProjectTitle =
@@ -324,6 +332,9 @@ function App() {
   const visibleTasks = canSeeAllTasks
     ? tasks
     : tasks.filter((task) => task.assignee === currentUser?.name);
+
+  const sidebarProgress = canSeeAllTasks ? projectProgress : personalProgress;
+  const sidebarProgressTitle = canSeeAllTasks ? 'Прогресс проекта' : 'Мой прогресс';
 
   function projectRoleLine() {
     if (!myMembership) {
@@ -397,8 +408,6 @@ function App() {
         <section className="project-layout">
           <div className="project-header">
             <div>
-              <ProgressBubble percent={projectProgress.percent} />
-
               {isEditingTitle ? (
                 <input
                   type="text"
@@ -483,7 +492,7 @@ function App() {
             </section>
 
             <aside className="workspace-sidebar">
-              <ProgressBlock progress={projectProgress} />
+              <ProgressBlock progress={sidebarProgress} title={sidebarProgressTitle} />
               <TeamMembers
                 members={projectMembers}
                 currentUserId={currentUser.id}
