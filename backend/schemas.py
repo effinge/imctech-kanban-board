@@ -99,3 +99,38 @@ class CommentOut(BaseModel):
     author_name: str
     text: str
     created_at: str
+
+
+class TelegramCodeRequest(BaseModel):
+    telegram_id: int
+    username: str | None = None
+
+
+class TelegramCodeOut(BaseModel):
+    code: str
+    expires_in_minutes: int
+
+
+class TelegramConfirm(BaseModel):
+    code: str = Field(min_length=4, max_length=12)
+    user_id: int
+
+
+class TelegramLinkOut(BaseModel):
+    user_id: int
+    telegram_id: int
+    username: str | None = None
+    name: str
+    system_role: str
+
+
+class TelegramTaskOut(BaseModel):
+    id: int
+    title: str
+    description: str
+    deadline: str
+    status: str
+    priority: str
+    project_id: int | None = None
+    project_name: str | None = None
+    mentor_comment: str | None = None

@@ -34,9 +34,9 @@ function TaskDetails({
         <h2>{task.title}</h2>
 
         <div className="details-meta">
-          <span>◉ {STATUS_LABELS[task.status]}</span>
+          <span>● {STATUS_LABELS[task.status]}</span>
           <span>● Приоритет</span>
-          <span>▣ Дедлайн</span>
+          <span>● Дедлайн</span>
           <span>● Исполнитель</span>
         </div>
 

@@ -1719,3 +1719,40 @@ button {
   flex-shrink: 0;
   display: inline-block;
 }
+
+.telegram-window {
+  width: 440px;
+}
+
+.telegram-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.telegram-steps {
+  margin: 0;
+  padding-left: 20px;
+  color: #c2c2c6;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.telegram-code-input {
+  width: 100%;
+  border: 1px solid #424349;
+  border-radius: 6px;
+  background: #111215;
+  color: #ffffff;
+  padding: 12px 14px;
+  outline: none;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.telegram-code-input:focus {
+  border-color: #5e5afe;
+}

@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException
+import os
+
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 import crud
@@ -17,8 +19,20 @@ from schemas import (
     TaskCreate,
     TaskOut,
     TaskUpdate,
+    TelegramCodeOut,
+    TelegramCodeRequest,
+    TelegramConfirm,
+    TelegramLinkOut,
+    TelegramTaskOut,
     UserOut,
 )
+
+BOT_API_SECRET = os.getenv("BOT_API_SECRET", "dev-bot-secret")
+
+
+def require_bot_secret(x_bot_secret: str = Header(default="")):
+    if x_bot_secret != BOT_API_SECRET:
+        raise HTTPException(status_code=401, detail="Неверный секрет бота")
 
 app = FastAPI(title="IMCTECH Kanban MVP")
 
@@ -149,3 +163,73 @@ def assign_member_specialty(project_id: int, payload: SpecialtyAssignment):
     if not membership:
         raise HTTPException(status_code=404, detail="Участник не найден в проекте")
     return crud.set_member_specialty(project_id, payload.user_id, payload.specialty)
+
+
+@app.post(
+    "/api/telegram/request-code",
+    response_model=TelegramCodeOut,
+    dependencies=[Depends(require_bot_secret)],
+)
+def telegram_request_code(payload: TelegramCodeRequest):
+    return crud.create_telegram_code(payload.telegram_id, payload.username)
+
+
+@app.post("/api/telegram/confirm", response_model=TelegramLinkOut)
+def telegram_confirm(payload: TelegramConfirm):
+    if not crud.get_user(payload.user_id):
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    link = crud.confirm_telegram_code(payload.code, payload.user_id)
+    if link is None:
+        raise HTTPException(status_code=404, detail="Код недействителен или истёк")
+    return link
+
+
+@app.get(
+    "/api/telegram/{telegram_id}/me",
+    response_model=TelegramLinkOut,
+    dependencies=[Depends(require_bot_secret)],
+)
+def telegram_me(telegram_id: int):
+    link = crud.get_telegram_link_by_telegram(telegram_id)
+    if link is None:
+        raise HTTPException(status_code=404, detail="Telegram не привязан")
+    return link
+
+
+@app.get(
+    "/api/telegram/{telegram_id}/tasks",
+    response_model=list[TelegramTaskOut],
+    dependencies=[Depends(require_bot_secret)],
+)
+def telegram_tasks(telegram_id: int):
+    tasks = crud.get_telegram_tasks(telegram_id)
+    if tasks is None:
+        raise HTTPException(status_code=404, detail="Telegram не привязан")
+    return tasks
+
+
+@app.get(
+    "/api/telegram/{telegram_id}/deadlines",
+    response_model=list[TelegramTaskOut],
+    dependencies=[Depends(require_bot_secret)],
+)
+def telegram_deadlines(telegram_id: int):
+    tasks = crud.get_telegram_tasks(telegram_id, only_open=True)
+    if tasks is None:
+        raise HTTPException(status_code=404, detail="Telegram не привязан")
+    return tasks
+
+
+@app.delete("/api/telegram/link/{user_id}")
+def telegram_unlink(user_id: int):
+    if not crud.delete_telegram_link_by_user(user_id):
+        raise HTTPException(status_code=404, detail="Привязка не найдена")
+    return {"message": "Telegram отвязан"}
+
+
+@app.get("/api/users/{user_id}/telegram", response_model=TelegramLinkOut)
+def telegram_status(user_id: int):
+    link = crud.get_telegram_link_by_user(user_id)
+    if link is None:
+        raise HTTPException(status_code=404, detail="Telegram не привязан")
+    return link

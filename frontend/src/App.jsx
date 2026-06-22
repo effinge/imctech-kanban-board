@@ -23,6 +23,7 @@ import ProjectSwitcher from './components/ProjectSwitcher';
 import TaskModal from './components/TaskModal';
 import TaskDetails from './components/TaskDetails';
 import TeamMembers from './components/TeamMembers';
+import TelegramModal from './components/TelegramModal';
 import {
   BriefcaseIcon,
   BuildingIcon,
@@ -51,6 +52,7 @@ function App() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [isTelegramOpen, setIsTelegramOpen] = useState(false);
 
   const [titleOverrides, setTitleOverrides] = useState({});
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -401,6 +403,9 @@ function App() {
               <span className="topbar-account-role">{accountRoleLabel(currentUser)}</span>
             </div>
             <div className="topbar-user"><UserIcon size={22} /></div>
+            <button className="logout-button" onClick={() => setIsTelegramOpen(true)}>
+              Telegram
+            </button>
             <button className="logout-button" onClick={handleLogout}>Выйти</button>
           </div>
         </header>
@@ -547,6 +552,10 @@ function App() {
           projectTitle={displayedProjectTitle}
           onClose={() => setIsDashboardOpen(false)}
         />
+      )}
+
+      {isTelegramOpen && (
+        <TelegramModal user={currentUser} onClose={() => setIsTelegramOpen(false)} />
       )}
     </div>
   );

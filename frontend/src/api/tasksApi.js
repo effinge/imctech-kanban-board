@@ -106,3 +106,20 @@ export function addComment(taskId, comment) {
     body: JSON.stringify(comment),
   });
 }
+
+export function getTelegramStatus(userId) {
+  return request(`/users/${userId}/telegram`);
+}
+
+export function confirmTelegram(code, userId) {
+  return request('/telegram/confirm', {
+    method: 'POST',
+    body: JSON.stringify({ code, user_id: userId }),
+  });
+}
+
+export function unlinkTelegram(userId) {
+  return request(`/telegram/link/${userId}`, {
+    method: 'DELETE',
+  });
+}

@@ -1,3 +1,7 @@
+import secrets
+import string
+from datetime import datetime, timedelta
+
 from database import get_connection
 from schemas import CommentCreate, TaskCreate, TaskUpdate
 
@@ -288,3 +292,147 @@ def set_member_specialty(project_id: int, user_id: int, specialty: str):
     connection.commit()
     connection.close()
     return get_project_members(project_id)
+
+
+# --- Интеграция с Telegram-ботом ---
+
+TELEGRAM_CODE_TTL_MINUTES = 15
+
+
+def _generate_telegram_code(length: int = 6) -> str:
+    alphabet = string.ascii_uppercase + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+
+def create_telegram_code(telegram_id: int, username: str | None):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        "DELETE FROM telegram_link_codes WHERE telegram_id = ? OR expires_at < ?",
+        (telegram_id, datetime.utcnow().isoformat()),
+    )
+
+    code = _generate_telegram_code()
+    while cursor.execute(
+        "SELECT 1 FROM telegram_link_codes WHERE code = ?", (code,)
+    ).fetchone():
+        code = _generate_telegram_code()
+
+    expires_at = (
+        datetime.utcnow() + timedelta(minutes=TELEGRAM_CODE_TTL_MINUTES)
+    ).isoformat()
+    cursor.execute(
+        """
+        INSERT INTO telegram_link_codes (code, telegram_id, username, expires_at)
+        VALUES (?, ?, ?, ?)
+        """,
+        (code, telegram_id, username, expires_at),
+    )
+    connection.commit()
+    connection.close()
+    return {"code": code, "expires_in_minutes": TELEGRAM_CODE_TTL_MINUTES}
+
+
+def confirm_telegram_code(code: str, user_id: int):
+    connection = get_connection()
+    cursor = connection.cursor()
+    now = datetime.utcnow().isoformat()
+    cursor.execute("DELETE FROM telegram_link_codes WHERE expires_at < ?", (now,))
+
+    row = cursor.execute(
+        "SELECT telegram_id, username FROM telegram_link_codes WHERE code = ?",
+        (code.upper(),),
+    ).fetchone()
+    if row is None:
+        connection.close()
+        return None
+
+    telegram_id = row["telegram_id"]
+    username = row["username"]
+
+    cursor.execute(
+        "DELETE FROM telegram_links WHERE user_id = ? OR telegram_id = ?",
+        (user_id, telegram_id),
+    )
+    cursor.execute(
+        """
+        INSERT INTO telegram_links (user_id, telegram_id, username)
+        VALUES (?, ?, ?)
+        """,
+        (user_id, telegram_id, username),
+    )
+    cursor.execute("DELETE FROM telegram_link_codes WHERE code = ?", (code.upper(),))
+    connection.commit()
+    connection.close()
+    return get_telegram_link_by_user(user_id)
+
+
+def _telegram_link_row(where_field: str, value):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        f"""
+        SELECT
+            tl.user_id AS user_id,
+            tl.telegram_id AS telegram_id,
+            tl.username AS username,
+            u.name AS name,
+            u.system_role AS system_role
+        FROM telegram_links tl
+        JOIN users u ON u.id = tl.user_id
+        WHERE tl.{where_field} = ?
+        """,
+        (value,),
+    )
+    link = row_to_dict(cursor.fetchone())
+    connection.close()
+    return link
+
+
+def get_telegram_link_by_user(user_id: int):
+    return _telegram_link_row("user_id", user_id)
+
+
+def get_telegram_link_by_telegram(telegram_id: int):
+    return _telegram_link_row("telegram_id", telegram_id)
+
+
+def delete_telegram_link_by_user(user_id: int):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM telegram_links WHERE user_id = ?", (user_id,))
+    connection.commit()
+    deleted_count = cursor.rowcount
+    connection.close()
+    return deleted_count > 0
+
+
+def get_telegram_tasks(telegram_id: int, only_open: bool = False):
+    link = get_telegram_link_by_telegram(telegram_id)
+    if link is None:
+        return None
+
+    connection = get_connection()
+    cursor = connection.cursor()
+    query = """
+        SELECT
+            t.id AS id,
+            t.title AS title,
+            t.description AS description,
+            t.deadline AS deadline,
+            t.status AS status,
+            t.priority AS priority,
+            t.project_id AS project_id,
+            p.name AS project_name,
+            t.mentor_comment AS mentor_comment
+        FROM tasks t
+        LEFT JOIN projects p ON p.id = t.project_id
+        WHERE t.assignee = ?
+    """
+    if only_open:
+        query += " AND t.status != 'done'"
+    query += " ORDER BY t.deadline ASC, t.id ASC"
+    cursor.execute(query, (link["name"],))
+    tasks = [row_to_dict(row) for row in cursor.fetchall()]
+    connection.close()
+    return tasks

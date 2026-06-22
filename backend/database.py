@@ -112,6 +112,32 @@ def init_db():
         """
     )
 
+    # --- Интеграция с Telegram-ботом ---
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS telegram_links (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL UNIQUE,
+            telegram_id INTEGER NOT NULL UNIQUE,
+            username TEXT,
+            linked_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+        """
+    )
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS telegram_link_codes (
+            code TEXT PRIMARY KEY,
+            telegram_id INTEGER NOT NULL,
+            username TEXT,
+            expires_at TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
     seed_members(cursor)
     seed_users(cursor)
     seed_projects(cursor)
