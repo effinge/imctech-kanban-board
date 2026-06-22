@@ -228,6 +228,87 @@ button {
   background: #914848;
 }
 
+/* Выпадающий список сортировки в тулбаре */
+.sort-select {
+  min-height: 42px;
+  padding: 0 36px 0 14px;
+  border: 1px solid #3a3b40;
+  border-radius: 4px;
+  background: #101113;
+  color: #d6d6d8;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2385868a' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.sort-select:hover {
+  border-color: #585b65;
+  color: #ffffff;
+}
+
+.sort-select:focus {
+  border-color: #5e5afe;
+}
+
+.sort-select option {
+  background: #18191c;
+  color: #eeeeee;
+}
+
+/* Редактируемое название проекта */
+.project-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 7px 0 0;
+  font-size: 36px;
+  line-height: 1.12;
+  font-weight: 800;
+  border-radius: 8px;
+}
+
+.project-title-editable {
+  cursor: text;
+  padding: 2px 8px;
+  margin-left: -8px;
+  transition: background 0.15s ease;
+}
+
+.project-title-editable:hover {
+  background: rgba(94, 90, 254, 0.12);
+}
+
+.project-title-edit-icon {
+  font-size: 18px;
+  color: #7f78ff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.project-title-editable:hover .project-title-edit-icon {
+  opacity: 1;
+}
+
+.project-title-input {
+  margin: 7px 0 0;
+  margin-left: -8px;
+  padding: 2px 8px;
+  width: min(560px, 60vw);
+  font-size: 36px;
+  line-height: 1.12;
+  font-weight: 800;
+  color: #ffffff;
+  background: #101113;
+  border: 1px solid #5e5afe;
+  border-radius: 8px;
+  outline: none;
+}
+
 .mentor-note,
 .error-message,
 .notice-message {
