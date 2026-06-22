@@ -12,25 +12,36 @@ const SPECIALTY_TAG_LABELS = {
 };
 
 function isTaskOverdue(task) {
-  if (task.status === 'done') {
-    return false;
-  }
-
+  if (task.status === 'done') return false;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   const deadline = new Date(task.deadline);
   deadline.setHours(0, 0, 0, 0);
-
   return deadline < today;
 }
 
-function formatDate(date) {
-  return new Date(date).toLocaleDateString('ru-RU', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+function getDeadlineInfo(deadline, status) {
+  if (!deadline) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(deadline);
+  d.setHours(0, 0, 0, 0);
+  const diff = Math.round((d - today) / 86400000);
+  if (status === 'done') return { text: d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' }), type: 'done' };
+  if (diff < 0) return { text: `просрочено ${Math.abs(diff)} дн.`, type: 'overdue' };
+  if (diff === 0) return { text: 'дедлайн сегодня!', type: 'today' };
+  if (diff === 1) return { text: 'завтра', type: 'soon' };
+  if (diff <= 3) return { text: `через ${diff} дн.`, type: 'soon' };
+  if (diff <= 7) return { text: `через ${diff} дн.`, type: 'week' };
+  return { text: d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' }), type: 'far' };
+}
+
+function assigneeInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(' ');
+  return parts.length >= 2
+    ? (parts[0][0] + parts[1][0]).toUpperCase()
+    : name.slice(0, 2).toUpperCase();
 }
 
 function TaskCard({
@@ -47,6 +58,7 @@ function TaskCard({
 }) {
   const overdue = isTaskOverdue(task);
   const isUnderReview = task.status === 'review';
+  const deadlineInfo = getDeadlineInfo(task.deadline, task.status);
 
   function handleDragStart(event) {
     event.dataTransfer.setData('taskId', task.id);
@@ -78,11 +90,16 @@ function TaskCard({
       </div>
 
       <div className="task-meta">
-        <span>{formatDate(task.deadline)}</span>
-        <span>● {task.assignee}</span>
+        {deadlineInfo && (
+          <span className={`deadline-text deadline-${deadlineInfo.type}`}>
+            ⏱ {deadlineInfo.text}
+          </span>
+        )}
+        <div className="assignee-row">
+          <span className="card-assignee-avatar">{assigneeInitials(task.assignee)}</span>
+          <span>{task.assignee}</span>
+        </div>
       </div>
-
-      {overdue && <div className="overdue-text">Просрочено</div>}
 
       {task.mentor_comment && (
         <div className="mentor-comment">

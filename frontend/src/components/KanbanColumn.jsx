@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import TaskCard from './TaskCard';
 
 function KanbanColumn({
@@ -14,14 +15,24 @@ function KanbanColumn({
   onApproveTask,
   onReturnTask,
 }) {
+  const [isDragOver, setIsDragOver] = useState(false);
+
   function handleDragOver(event) {
     if (canDrag) {
       event.preventDefault();
+      setIsDragOver(true);
+    }
+  }
+
+  function handleDragLeave(event) {
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      setIsDragOver(false);
     }
   }
 
   function handleDrop(event) {
     event.preventDefault();
+    setIsDragOver(false);
     const taskId = Number(event.dataTransfer.getData('taskId'));
     if (taskId) {
       onDropTask(taskId, column.key);
@@ -30,8 +41,9 @@ function KanbanColumn({
 
   return (
     <section
-      className={`kanban-column column-${column.key}`}
+      className={`kanban-column column-${column.key}${isDragOver ? ' drag-over' : ''}`}
       onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
       <div className="column-header">
@@ -41,6 +53,9 @@ function KanbanColumn({
       </div>
 
       <div className="task-list">
+        {tasks.length === 0 && (
+          <div className="column-empty">Нет задач</div>
+        )}
         {tasks.map((task) => (
           <TaskCard
             key={task.id}

@@ -35,16 +35,14 @@ function TaskDetails({
 
         <div className="details-meta">
           <span>◉ {STATUS_LABELS[task.status]}</span>
-          <span>● Приоритет</span>
-          <span>▣ Дедлайн</span>
-          <span>● Исполнитель</span>
+          <span>● {PRIORITY_LABELS[task.priority]}</span>
+          <span>▣ {new Date(task.deadline).toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+          <span>● {task.assignee}</span>
         </div>
 
         <div className="details-badges">
-          <span className="tag">учебный проект</span>
           <span className={`priority priority-${task.priority}`}>{PRIORITY_LABELS[task.priority]}</span>
           <span>{new Date(task.deadline).toLocaleDateString('ru-RU')}</span>
-          <span>● {task.assignee}</span>
         </div>
 
         <h3>Описание</h3>

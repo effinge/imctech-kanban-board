@@ -357,6 +357,22 @@ button {
   border-radius: 8px;
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kanban-column.drag-over {
+  border-color: rgba(94, 90, 254, 0.6);
+  box-shadow: inset 0 0 0 2px rgba(94, 90, 254, 0.25);
+}
+
+.column-empty {
+  margin-top: 12px;
+  padding: 20px 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  text-align: center;
+  color: #44454a;
+  font-size: 13px;
 }
 
 .column-backlog {
@@ -508,17 +524,58 @@ button {
 .task-meta {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   margin-top: 12px;
-  color: #d5d5d5;
   font-size: 12px;
 }
 
-.overdue-text {
-  margin-top: 8px;
+.deadline-text {
+  font-weight: 600;
+}
+
+.deadline-overdue { color: #ff7e7e; }
+.deadline-today   { color: #ffaa44; font-weight: 700; }
+.deadline-soon    { color: #ffd166; }
+.deadline-week    { color: #a8c5ff; }
+.deadline-far     { color: #85868a; }
+.deadline-done    { color: #55565b; }
+
+.assignee-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #c0c0c4;
+}
+
+.card-assignee-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #3e3b7e;
+  color: #c5c1ff;
+  font-size: 9px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.clear-filters-btn {
+  border: 1px solid #4a3b3b;
+  background: rgba(171, 67, 67, 0.15);
   color: #ff9f9f;
-  font-size: 12px;
-  font-weight: 700;
+  padding: 0 12px;
+  min-height: 42px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.clear-filters-btn:hover {
+  background: rgba(171, 67, 67, 0.28);
+  color: #ffbdbd;
 }
 
 .task-actions {

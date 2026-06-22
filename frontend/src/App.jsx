@@ -496,6 +496,7 @@ function App() {
                   placeholder="⌕ Поиск по задачам"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Escape' && setSearchQuery('')}
                 />
                 <select
                   className="sort-select"
@@ -514,6 +515,15 @@ function App() {
                   <option value="priority">По приоритету</option>
                   <option value="deadline">По дедлайну</option>
                 </select>
+                {(searchQuery || filterAssignee) && (
+                  <button
+                    className="clear-filters-btn"
+                    onClick={() => { setSearchQuery(''); setFilterAssignee(''); }}
+                    title="Сбросить фильтры"
+                  >
+                    × сбросить
+                  </button>
+                )}
                 {(isMentor || isLead) && (
                   <button
                     className="secondary-button"
