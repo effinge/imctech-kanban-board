@@ -1,4 +1,5 @@
 import { accountRoleLabel, SYSTEM_ROLE_LABELS } from '../constants/roles';
+import Logo from './Logo';
 
 // Экран входа для защиты проекта: вход по выбору демо-аккаунта (без пароля).
 function LoginScreen({ users, onLogin, error }) {
@@ -6,7 +7,7 @@ function LoginScreen({ users, onLogin, error }) {
     <div className="login-screen">
       <div className="login-card">
         <div className="login-head">
-          <div className="login-logo">IMCTECH</div>
+          <Logo height={38} />
           <h1>Канбан-доски проектов</h1>
           <p>Выберите демо-аккаунт для входа</p>
         </div>

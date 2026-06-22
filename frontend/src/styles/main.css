@@ -7,9 +7,8 @@ body {
   min-width: 1180px;
   background: #0a0b0d;
   color: #eeeeee;
-  font-family: Inter, Arial, Helvetica, sans-serif;
+  font-family: Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -122,7 +121,6 @@ button {
   font-size: 36px;
   line-height: 1.12;
   font-weight: 800;
-  letter-spacing: -0.6px;
 }
 
 .role-switcher {
@@ -680,7 +678,6 @@ button {
   margin: 0;
   font-size: 22px;
   line-height: 1.25;
-  letter-spacing: -0.3px;
 }
 
 .close-button {
@@ -772,7 +769,6 @@ button {
   margin: 0 0 8px;
   font-size: 28px;
   line-height: 1.22;
-  letter-spacing: -0.4px;
 }
 
 .details-meta {
@@ -979,15 +975,27 @@ button {
   margin-bottom: 24px;
 }
 
-.login-logo {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: #5e5afe;
-  color: #ffffff;
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  vertical-align: middle;
+}
+
+.brand-logo-mark {
+  display: block;
+  flex-shrink: 0;
+}
+
+.brand-logo-mark path {
+  fill: #6c68ff;
+}
+
+.brand-logo-text {
+  font-size: 26px;
   font-weight: 900;
-  letter-spacing: 1px;
-  font-size: 14px;
+  letter-spacing: 0.4px;
+  color: #ffffff;
 }
 
 .login-head h1 {
@@ -995,7 +1003,6 @@ button {
   font-size: 26px;
   line-height: 1.2;
   font-weight: 800;
-  letter-spacing: -0.4px;
 }
 
 .login-head p {
@@ -1459,7 +1466,6 @@ button {
   font-size: 26px;
   font-weight: 900;
   line-height: 1.05;
-  letter-spacing: -0.5px;
   margin-bottom: 6px;
   color: #e0e0e0;
 }
