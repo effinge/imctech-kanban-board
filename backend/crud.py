@@ -1,6 +1,6 @@
 import secrets
 import string
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from database import get_connection
 from schemas import CommentCreate, TaskCreate, TaskUpdate
@@ -54,7 +54,9 @@ def create_task(task: TaskCreate):
     connection.commit()
     task_id = cursor.lastrowid
     connection.close()
-    return get_task(task_id)
+    created = get_task(task_id)
+    enqueue_task_added(created)
+    return created
 
 
 def update_task(task_id: int, task: TaskUpdate):
@@ -436,3 +438,125 @@ def get_telegram_tasks(telegram_id: int, only_open: bool = False):
     tasks = [row_to_dict(row) for row in cursor.fetchall()]
     connection.close()
     return tasks
+
+
+PRIORITY_LABELS = {"low": "низкий", "medium": "средний", "high": "высокий"}
+
+
+def get_telegram_id_by_name(name: str):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        SELECT tl.telegram_id AS telegram_id
+        FROM telegram_links tl
+        JOIN users u ON u.id = tl.user_id
+        WHERE u.name = ?
+        """,
+        (name,),
+    )
+    row = cursor.fetchone()
+    connection.close()
+    return row["telegram_id"] if row else None
+
+
+def enqueue_notification(telegram_id: int, text: str, kind: str, dedup_key: str | None = None):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        INSERT OR IGNORE INTO telegram_notifications (telegram_id, text, kind, dedup_key)
+        VALUES (?, ?, ?, ?)
+        """,
+        (telegram_id, text, kind, dedup_key),
+    )
+    connection.commit()
+    connection.close()
+
+
+def enqueue_task_added(task):
+    if not task:
+        return
+    telegram_id = get_telegram_id_by_name(task["assignee"])
+    if telegram_id is None:
+        return
+    project = get_project(task["project_id"]) if task.get("project_id") else None
+    project_name = project["name"] if project else "—"
+    priority = PRIORITY_LABELS.get(task["priority"], task["priority"])
+    text = (
+        "🆕 Тебе назначена новая задача\n\n"
+        f"#{task['id']} {task['title']}\n"
+        f"Проект: {project_name}\n"
+        f"Дедлайн: {task['deadline']}\n"
+        f"Приоритет: {priority}"
+    )
+    enqueue_notification(telegram_id, text, "task_added", f"task_added:{task['id']}")
+
+
+def enqueue_due_deadline_reminders(days_ahead: int = 2):
+    today = date.today()
+    today_str = today.isoformat()
+    horizon = (today + timedelta(days=days_ahead)).isoformat()
+
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        SELECT
+            t.id AS id,
+            t.title AS title,
+            t.deadline AS deadline,
+            tl.telegram_id AS telegram_id
+        FROM tasks t
+        JOIN users u ON u.name = t.assignee
+        JOIN telegram_links tl ON tl.user_id = u.id
+        WHERE t.status != 'done'
+          AND t.deadline IS NOT NULL
+          AND t.deadline != ''
+          AND t.deadline <= ?
+        """,
+        (horizon,),
+    )
+    rows = [row_to_dict(row) for row in cursor.fetchall()]
+    connection.close()
+
+    for row in rows:
+        overdue = row["deadline"] < today_str
+        if overdue:
+            text = f"⏰ Просрочена задача\n\n{row['title']}\nДедлайн был: {row['deadline']}"
+        else:
+            text = f"⏰ Скоро дедлайн\n\n{row['title']}\nДедлайн: {row['deadline']}"
+        dedup = f"deadline:{row['id']}:{today_str}"
+        enqueue_notification(row["telegram_id"], text, "deadline", dedup)
+
+
+def get_pending_notifications():
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        SELECT id, telegram_id, text, kind
+        FROM telegram_notifications
+        WHERE delivered = 0
+        ORDER BY id ASC
+        """
+    )
+    items = [row_to_dict(row) for row in cursor.fetchall()]
+    connection.close()
+    return items
+
+
+def ack_notifications(ids):
+    if not ids:
+        return 0
+    connection = get_connection()
+    cursor = connection.cursor()
+    placeholders = ",".join("?" for _ in ids)
+    cursor.execute(
+        f"UPDATE telegram_notifications SET delivered = 1 WHERE id IN ({placeholders})",
+        tuple(ids),
+    )
+    connection.commit()
+    updated = cursor.rowcount
+    connection.close()
+    return updated

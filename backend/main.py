@@ -19,10 +19,12 @@ from schemas import (
     TaskCreate,
     TaskOut,
     TaskUpdate,
+    TelegramAck,
     TelegramCodeOut,
     TelegramCodeRequest,
     TelegramConfirm,
     TelegramLinkOut,
+    TelegramNotificationOut,
     TelegramTaskOut,
     UserOut,
 )
@@ -233,3 +235,22 @@ def telegram_status(user_id: int):
     if link is None:
         raise HTTPException(status_code=404, detail="Telegram не привязан")
     return link
+
+
+@app.get(
+    "/api/telegram/notifications/pending",
+    response_model=list[TelegramNotificationOut],
+    dependencies=[Depends(require_bot_secret)],
+)
+def telegram_pending_notifications():
+    crud.enqueue_due_deadline_reminders()
+    return crud.get_pending_notifications()
+
+
+@app.post(
+    "/api/telegram/notifications/ack",
+    dependencies=[Depends(require_bot_secret)],
+)
+def telegram_ack_notifications(payload: TelegramAck):
+    count = crud.ack_notifications(payload.ids)
+    return {"acknowledged": count}

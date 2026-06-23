@@ -134,3 +134,14 @@ class TelegramTaskOut(BaseModel):
     project_id: int | None = None
     project_name: str | None = None
     mentor_comment: str | None = None
+
+
+class TelegramNotificationOut(BaseModel):
+    id: int
+    telegram_id: int
+    text: str
+    kind: str
+
+
+class TelegramAck(BaseModel):
+    ids: list[int]

@@ -138,6 +138,20 @@ def init_db():
         """
     )
 
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS telegram_notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            telegram_id INTEGER NOT NULL,
+            text TEXT NOT NULL,
+            kind TEXT NOT NULL,
+            dedup_key TEXT UNIQUE,
+            delivered INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
     seed_members(cursor)
     seed_users(cursor)
     seed_projects(cursor)
