@@ -123,6 +123,51 @@ button {
   font-weight: 800;
 }
 
+.project-title-wrapper {
+  display: inline-grid;
+  margin: 7px 0 0;
+  min-width: 4ch;
+  max-width: 100%;
+}
+
+.project-title-wrapper::after {
+  content: attr(data-value);
+  grid-area: 1 / 1;
+  visibility: hidden;
+  pointer-events: none;
+  font-size: 36px;
+  line-height: 1.12;
+  font-weight: 800;
+  font-family: inherit;
+  padding: 0;
+  white-space: pre;
+}
+
+.project-title-input {
+  grid-area: 1 / 1;
+  min-width: 0;
+  font-size: 36px;
+  line-height: 1.12;
+  font-weight: 800;
+  font-family: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  outline: none;
+  padding: 0;
+  transition: border-color 0.15s;
+}
+
+.project-title-input:hover {
+  border-bottom-color: #3a3b40;
+  cursor: text;
+}
+
+.project-title-input:focus {
+  border-bottom-color: #5e5afe;
+}
+
 .role-switcher {
   display: flex;
   align-items: center;
@@ -186,15 +231,31 @@ button {
   margin-bottom: 16px;
 }
 
-.search-field {
+.sort-select {
   flex: 1;
   min-height: 42px;
-  padding: 12px 16px;
+  padding: 0 16px;
   border: 1px solid #3a3b40;
   border-radius: 4px;
-  color: #85868a;
+  color: #c9cace;
   background: #101113;
   font-size: 14px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2385868a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #5e5afe;
+}
+
+.sort-select option {
+  background: #1a1b1f;
+  color: #c9cace;
 }
 
 .primary-button,
@@ -287,6 +348,64 @@ button {
 
 .column-done {
   background: #0f2118;
+}
+
+/* Раздел «Приоритеты» */
+.column-low {
+  background: #16201a;
+}
+
+.column-medium {
+  background: #25220f;
+}
+
+.column-high {
+  background: #221314;
+}
+
+.column-low .status-dot {
+  background: #5e9e4a;
+}
+
+.column-medium .status-dot {
+  background: #cfa425;
+}
+
+.column-high .status-dot {
+  background: #d65757;
+}
+
+/* Раздел «Дедлайны» */
+.column-week {
+  background: #221314;
+}
+
+.column-next_week {
+  background: #25220f;
+}
+
+.column-two_weeks {
+  background: #18212e;
+}
+
+.column-month {
+  background: #17181b;
+}
+
+.column-week .status-dot {
+  background: #d65757;
+}
+
+.column-next_week .status-dot {
+  background: #cfa425;
+}
+
+.column-two_weeks .status-dot {
+  background: #4f9dff;
+}
+
+.column-month .status-dot {
+  background: #a3a3a3;
 }
 
 .column-header {

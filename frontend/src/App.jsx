@@ -55,9 +55,9 @@ function App() {
   const [isTelegramOpen, setIsTelegramOpen] = useState(false);
 
   const [titleOverrides, setTitleOverrides] = useState({});
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
   const [sortOption, setSortOption] = useState('default');
+  const [activeSection, setActiveSection] = useState('status');
 
   const role = currentUser?.system_role || 'student';
   const isMentor = role === 'mentor';
@@ -87,12 +87,14 @@ function App() {
   useEffect(() => {
     if (currentUser && activeProjectId) {
       loadBoard(activeProjectId);
-      setIsEditingTitle(false);
       const savedTitle = localStorage.getItem(
         `${PROJECT_TITLE_STORAGE_PREFIX}${activeProjectId}`
       );
       if (savedTitle) {
         setTitleOverrides((current) => ({ ...current, [activeProjectId]: savedTitle }));
+        setTitleDraft(savedTitle);
+      } else {
+        setTitleDraft(activeProject?.name ?? 'Проект');
       }
     }
   }, [currentUser, activeProjectId]);
@@ -133,30 +135,22 @@ function App() {
     setEditingTask(null);
   }
 
-  function startEditingTitle() {
-    if (!canEditProjectTitle) {
-      return;
-    }
-    setTitleDraft(displayedProjectTitle);
-    setIsEditingTitle(true);
-  }
-
   function commitTitleChange() {
     const trimmedTitle = titleDraft.trim();
     const finalTitle = trimmedTitle === '' ? activeProject?.name || 'Проект' : trimmedTitle;
 
+    setTitleDraft(finalTitle);
     setTitleOverrides((current) => ({ ...current, [activeProjectId]: finalTitle }));
     localStorage.setItem(`${PROJECT_TITLE_STORAGE_PREFIX}${activeProjectId}`, finalTitle);
-    setIsEditingTitle(false);
   }
 
   function handleTitleKeyDown(event) {
     if (event.key === 'Enter') {
       event.preventDefault();
-      commitTitleChange();
+      event.target.blur();
     } else if (event.key === 'Escape') {
       setTitleDraft(displayedProjectTitle);
-      setIsEditingTitle(false);
+      event.target.blur();
     }
   }
 
@@ -335,6 +329,27 @@ function App() {
     ? tasks
     : tasks.filter((task) => task.assignee === currentUser?.name);
 
+  let sortedTasks = [...visibleTasks];
+  if (sortOption === 'deadline_asc') {
+    sortedTasks.sort((a, b) => {
+      if (!a.deadline && !b.deadline) return 0;
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline) - new Date(b.deadline);
+    });
+  } else if (sortOption === 'deadline_desc') {
+    sortedTasks.sort((a, b) => {
+      if (!a.deadline && !b.deadline) return 0;
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(b.deadline) - new Date(a.deadline);
+    });
+  } else if (sortOption === 'priority_asc') {
+    sortedTasks.sort((a, b) => (PRIORITY_WEIGHT[a.priority] ?? 1) - (PRIORITY_WEIGHT[b.priority] ?? 1));
+  } else if (sortOption === 'priority_desc') {
+    sortedTasks.sort((a, b) => (PRIORITY_WEIGHT[b.priority] ?? 1) - (PRIORITY_WEIGHT[a.priority] ?? 1));
+  }
+
   const sidebarProgress = canSeeAllTasks ? projectProgress : personalProgress;
   const sidebarProgressTitle = canSeeAllTasks ? 'Прогресс проекта' : 'Мой прогресс';
 
@@ -413,26 +428,20 @@ function App() {
         <section className="project-layout">
           <div className="project-header">
             <div>
-              {isEditingTitle ? (
-                <input
-                  type="text"
-                  className="project-title-input"
-                  value={titleDraft}
-                  autoFocus
-                  onChange={(event) => setTitleDraft(event.target.value)}
-                  onBlur={commitTitleChange}
-                  onKeyDown={handleTitleKeyDown}
-                  maxLength={120}
-                />
+              {canEditProjectTitle ? (
+                <div className="project-title-wrapper" data-value={titleDraft}>
+                  <input
+                    type="text"
+                    className="project-title-input"
+                    value={titleDraft}
+                    onChange={(event) => setTitleDraft(event.target.value)}
+                    onBlur={commitTitleChange}
+                    onKeyDown={handleTitleKeyDown}
+                    maxLength={120}
+                  />
+                </div>
               ) : (
-                <h1
-                  className={`project-title ${canEditProjectTitle ? 'project-title-editable' : ''}`}
-                  onClick={startEditingTitle}
-                  title={canEditProjectTitle ? 'Нажмите, чтобы переименовать проект' : ''}
-                >
-                  {displayedProjectTitle}
-                  {canEditProjectTitle && <span className="project-title-edit-icon">✎</span>}
-                </h1>
+                <h1 className="project-title">{displayedProjectTitle}</h1>
               )}
 
               <p className="project-role-line">{projectRoleLine()}</p>
@@ -445,15 +454,40 @@ function App() {
           </div>
 
           <div className="project-tabs">
-            <button className="tab active">Статусы →</button>
-            <button className="tab">↑ Приоритеты</button>
-            <button className="tab">⏱︎ Дедлайны</button>
+            <button
+              className={`tab${activeSection === 'status' ? ' active' : ''}`}
+              onClick={() => setActiveSection('status')}
+            >
+              Статусы →
+            </button>
+            <button
+              className={`tab${activeSection === 'priority' ? ' active' : ''}`}
+              onClick={() => setActiveSection('priority')}
+            >
+              ↑ Приоритеты
+            </button>
+            <button
+              className={`tab${activeSection === 'deadline' ? ' active' : ''}`}
+              onClick={() => setActiveSection('deadline')}
+            >
+              ⏱︎ Дедлайны
+            </button>
           </div>
 
           <div className="workspace-grid">
             <section className="workspace-main">
               <div className="toolbar">
-                <div className="search-field">⌕ Поиск по задачам</div>
+                <select
+                  className="sort-select"
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value)}
+                >
+                  <option value="default">Сортировка: по умолчанию</option>
+                  <option value="deadline_asc">Дедлайн: ближе →</option>
+                  <option value="deadline_desc">Дедлайн: позже →</option>
+                  <option value="priority_asc">Приоритет: высокий → низкий</option>
+                  <option value="priority_desc">Приоритет: низкий → высокий</option>
+                </select>
                 {(isMentor || isLead) && (
                   <button
                     className="secondary-button"
@@ -482,7 +516,8 @@ function App() {
               {error && <div className="error-message">{error}</div>}
 
               <KanbanBoard
-                tasks={visibleTasks}
+                section={activeSection}
+                tasks={sortedTasks}
                 canDrag={canDrag}
                 canManageTasks={canManageTasks}
                 canReview={canReview}
